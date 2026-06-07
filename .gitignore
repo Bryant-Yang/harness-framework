@@ -1,1 +1,7 @@
 .DS_Store
+
+# 样例工程一旦本地装依赖/构建产生的产物（examples/node-orders-api）
+node_modules/
+dist/
+coverage/
+*.log

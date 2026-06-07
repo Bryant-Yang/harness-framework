@@ -60,6 +60,9 @@ harness_extract/
 ├── METHODOLOGY.md                     # 方法论：每个机制为什么存在、如何裁剪
 ├── AI-ADOPTION-PROTOCOL.md            # AI 自动接入协议：新旧项目统一落地流程
 ├── INSTANTIATION-CHECKLIST.md         # 复用到新工程的逐步检查清单
+├── LICENSE                            # MIT
+├── skill/SKILL.md                     # 把本框架封装成 agent 可发现的 skill（机制入口）
+├── scripts/sync-skill.sh             # 把 skill 安装到 Claude Code / Codex 个人技能目录
 └── templates/                         # 拷过去即可（带 <占位符> 的填空，指针文件直接用）
     ├── AGENTS.template.md              # ← 唯一真契约（机制 1）
     ├── CLAUDE.md                       # ┐
@@ -131,3 +134,27 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 ```
 
 把协议里的「给 AI 的固定指令」交给 Codex / Claude Code / Gemini CLI 等 agent，即可让 AI 自动审计项目、填充模板、接红线守门并完成负向验证。
+
+## 作为 skill 安装（一键触发，免手动翻协议）
+
+本框架已封装成 [agentskills.io](https://agentskills.io) 格式的 skill，让 Claude Code / Codex
+在**任意新旧项目**里被自动发现并触发——不必每次手动把协议贴给 agent。
+
+```bash
+bash scripts/sync-skill.sh
+```
+
+脚本以**本仓库为唯一源**，把 `SKILL.md + templates/ + examples/ + reference/`（三份顶层文档）
+组装并安装到：
+
+- `~/.claude/skills/harness-framework/`（Claude Code）
+- `~/.agents/skills/harness-framework/`（Codex）
+
+> 可用环境变量改安装根路径：`CLAUDE_SKILLS_DIR` / `CODEX_SKILLS_DIR`。
+> 脚本只清理 `harness-framework` 自己的目录，不动同级其它 skill。
+
+安装后：
+
+- **Claude Code**：在目标项目里说「用 harness 给这个项目立规矩」，或直接 `/harness-framework`。
+- **Codex**：同名 skill 已就位，触发方式一致。
+- **改了仓库里的源文件后**：重跑 `bash scripts/sync-skill.sh` 即同步（缓解自包含的两份漂移）。
