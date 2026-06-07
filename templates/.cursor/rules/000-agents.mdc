@@ -1,0 +1,8 @@
+---
+description: 指向唯一契约源 AGENTS.md
+alwaysApply: true
+---
+
+本仓库唯一契约源是根目录 `AGENTS.md`。开始任何工作前先阅读并严格遵守，本规则不复述内容。
+
+> 注：新版 Cursor 已能原生读取 `AGENTS.md`，本规则可不要；它是为偏好 `.cursor/rules/` 优先级的设置而保留的薄指针。

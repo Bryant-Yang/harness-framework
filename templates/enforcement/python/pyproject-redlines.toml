@@ -1,0 +1,54 @@
+# 红线守门骨架（Python）—— 把这些段并入项目 pyproject.toml。
+# 三类闸门：import-linter（禁依赖/分层）、ruff（禁危险写法/banned-api）、mypy（禁类型逃逸）。
+# 等价于 TS 的 eslint：换实现、不换契约。
+#
+# @author <AUTHOR>
+
+# ── import-linter：禁某 import / 单向分层（主力，等价 TS no-restricted-imports）──
+# 跑：lint-imports   （pip install import-linter）
+[tool.importlinter]
+root_package = "<yourapp>"
+
+[[tool.importlinter.contracts]]
+# R<n> 单向分层：列表从高层到低层，高层可 import 低层，低层不可反向
+name = "R<n> 单向分层 web -> services -> domain"
+type = "layers"
+layers = [
+    "<yourapp>.web",
+    "<yourapp>.services",
+    "<yourapp>.domain",
+]
+
+[[tool.importlinter.contracts]]
+# R<n> domain 纯业务，禁止 import ORM（等价 TS 的 domain 禁 prisma）
+name = "R<n> domain 禁止依赖 ORM / db"
+type = "forbidden"
+source_modules = ["<yourapp>.domain"]
+forbidden_modules = ["sqlalchemy", "<yourapp>.db"]
+
+[[tool.importlinter.contracts]]
+# R<n> 被替换的旧依赖禁止复活（等价 TS 的禁 @acme/monolith）
+name = "R<n> 旧单体禁止复活"
+type = "forbidden"
+source_modules = ["<yourapp>"]
+forbidden_modules = ["<acme_legacy>"]
+
+
+# ── ruff：banned-api（禁某模块） + 危险写法 ──
+# 跑：ruff check .
+[tool.ruff.lint]
+select = ["TID", "ANN", "F", "E"]   # TID=tidy-imports, ANN=禁裸 Any 注解
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"        # 禁相对导入跨层，强迫显式包路径
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"<acme_legacy>".msg = "R<n> 旧单体禁止复活——已拆分到独立服务"
+
+
+# ── mypy：禁类型逃逸（等价 TS no-explicit-any）──
+# 跑：mypy <yourapp>
+[tool.mypy]
+disallow_any_explicit = true        # 禁止显式 Any
+disallow_untyped_defs = true
+warn_return_any = true

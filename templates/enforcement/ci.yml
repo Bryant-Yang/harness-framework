@@ -1,0 +1,54 @@
+# CI 流水线骨架 —— GitHub Actions 格式（gitlab / codeup 可照步骤转写）
+#
+# 这是 harness 的最终兜底闸门：agent 想合也合不进，除非闸门全绿。
+# 「红线全部清零」不是靠 agent 自觉，而是靠 check-redlines + lint 在这里机械拦。
+#
+# 守门件套（与 AGENTS.md §4.4 / workflow §4 一致）：
+#   redlines → typecheck → lint → test → build
+# 重场景（WebGL / E2E / 性能预算）按需放到 nightly job，避免拖慢 PR 反馈。
+#
+# @author <AUTHOR>
+name: CI
+
+on:
+  push:
+    branches: [<主分支>]
+  pull_request:
+    branches: [<主分支>]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: redlines / typecheck / lint / test / build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── 红线闸门：跨语言、最先跑、最便宜，命中即 fail ──
+      - name: Red lines
+        run: bash scripts/check-redlines.sh
+
+      # ↓↓ 以下按项目工具链替换（pnpm / npm / poetry / go …）↓↓
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20.10', cache: 'pnpm' }
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
