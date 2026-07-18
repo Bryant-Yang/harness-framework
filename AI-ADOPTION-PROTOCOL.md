@@ -3,7 +3,7 @@
 > 作者：Bryant Yang
 >
 > 本文把 harness 的使用方式固化成一套 AI 可执行协议。无论新项目还是旧项目，都让 AI 按这套流程完成：
-> **发现项目事实 → 实例化文档 → 生成红线 → 接 enforcement → 负向验证 → 输出未决项**。
+> **审计事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement → 负向验证与自修 → 补行为证据 → 输出 Steering 与未决项**。
 
 ## 适用场景
 
@@ -18,27 +18,39 @@
 3. CI 负责最终兜底：违反红线时合不进主分支。
 4. 旧项目不暴力覆盖：已有文档先保留，冲突时生成候选版本或合并。
 5. 红线必须可执行：写不出 grep / lint / CI 守门的，不准叫红线。
+6. 重要目标必须闭环：行动前有 Guide，行动后有 Sensor 或明确的人类确认路径。
+7. 约束分级：确定性 Gate、推理型 Review Criterion、人类 Acceptance Decision 不混用。
+8. 行为证据独立：当前实现 agent 自己生成的测试不能成为关键行为的唯一验收依据。
 
 ## 统一流水线
 
 ```text
-1. Project Audit
-   识别技术栈、目录结构、构建命令、测试命令、lint 命令、CI、现有 agent 配置。
+1. Project Audit + Harnessability
+   识别技术栈、目录结构、构建/测试/lint/CI、现有 agent 配置、类型反馈、模块边界、
+   测试隔离性、运行日志和关键行为证据。
 
 2. Harness Instantiation
-   生成或合并 AGENTS.md、HARNESS.md、docs/workflow.md、commit 规范和必要指针文件。
+   生成或合并 AGENTS.md、HARNESS.md、docs/workflow.md、docs/harness-controls.md、
+   commit 规范和必要指针文件，并记录框架版本与本地差异。
 
-3. Redline Design
+3. Control Mapping
+   把重要目标映射为 Guide、Guide 类型、Sensor、Sensor 类型、生命周期、失败处置和 Owner；
+   标明 Maintainability / Architecture Fitness / Behaviour 覆盖边界。
+
+4. Redline Design
    从项目风险里提炼 3-8 条可机械检查的红线，并登记到 HARNESS §8。
 
-4. Enforcement Wiring
+5. Enforcement Wiring
    为每条红线接 grep / lint / commitlint / CI 守门。
 
-5. Negative Verification
-   故意写一条违规探针，确认守门失败；删除探针，再确认守门通过。
+6. Negative Verification + Self-correction
+   故意写一条违规探针，确认守门失败且反馈足以指导修复；删除探针，再确认守门通过。
 
-6. Handoff
-   输出已接好的红线、仍需人工拍板的问题、历史债 baseline 和下一步建议。
+7. Behaviour Evidence
+   对关键用例登记独立证据、批准人、自动检查和人工验证；不把 AI 自生成测试当唯一证据。
+
+8. Handoff + Steering
+   输出已接好的控制、红线、覆盖边界、历史债 baseline、人工待决和首轮 Steering 观察项。
 ```
 
 ## 新项目执行口径
@@ -47,14 +59,17 @@
 
 - 复制 `templates/` 到项目根目录。
 - `*.template.md` 去掉 `.template`。
+- 将框架版本与来源 commit 记录到 `docs/harness-controls.md`。
 - 填入 `<PROJECT>`、`<AUTHOR>`、`<MISSION>`、`<YYYY-MM-DD>`、`<语言>`、`<CI_CMD>`。
 - 先写 3-5 条红线，不要一开始堆满。
 - 直接把 enforcement 接进 CI。
+- 对至少一个关键行为登记独立验收证据；没有真实业务的工具库可标记为“不适用”。
 
 完成标准：
 
 - `AGENTS.md` 是唯一契约源。
 - `HARNESS.md §8` 每条红线都有守门命令。
+- `docs/harness-controls.md` 里的重要目标都有 Sensor 或明确的人类确认路径。
 - `bash scripts/check-redlines.sh` 能通过。
 - 负向违规探针能被拦住。
 
@@ -66,6 +81,7 @@
 - 冲突时生成候选文件，如 `HARNESS.harness-new.md`，或在原文件中最小合并。
 - 已存在违规先列为历史债，不直接要求全仓清零。
 - 新增违规必须从接入当天开始被拦。
+- baseline 必须有生成方式和 diff 方式，不能只写一句“历史债以后处理”。
 - 红线优先选择最容易失控的边界：旧依赖复活、跨层 import、裸配置、类型逃逸、绕过封装层。
 
 完成标准：
@@ -74,6 +90,7 @@
 - 历史债有清单，不和新增违规混在一起。
 - 至少一条核心红线已机械守门。
 - 后续 PR 不能新增同类违规。
+- Control Map 明确哪些是观察模式、哪些是阻断模式，并有逐步收紧计划。
 
 ## 迁移 / 替换项目额外要求
 
@@ -104,38 +121,52 @@ R1 被替换的旧依赖禁止任何形式复活
    - 构建 / 测试 / lint 命令
    - 现有 README / AGENTS / CLAUDE / GEMINI / CI 配置
    - 已存在的架构约束和常见风险
+   - Harnessability：类型反馈、模块边界、测试隔离性、运行日志、关键行为证据
 
 2. 从 harness templates 实例化：
    - AGENTS.md
    - HARNESS.md
    - docs/workflow.md
+   - docs/harness-controls.md
    - docs/git-commit-conventions.md
    - 必要的 CLAUDE.md / GEMINI.md / .github/copilot-instructions.md / .cursor/rules 指针
    - scripts/check-redlines.sh
 
-3. 如果是旧项目：
+3. 建立 Control Map：
+   - 每个重要目标分别登记 Guide 类型与 Sensor 类型，再记录运行时机、失败处置和 Owner
+   - 区分 Deterministic Gate / Inferential Review Criterion / Human Acceptance Decision
+   - 明确 Maintainability / Architecture Fitness / Behaviour 的覆盖边界和不保证项
+
+4. 如果是旧项目：
    - 不要覆盖已有重要文档，冲突时保留旧文件，生成候选版本或做最小合并
    - 红线只写能机械检查的，不要拍脑袋
    - 已存在违规先列为历史债，不要直接让全仓 CI 失败
    - 新增违规必须能被拦
+   - baseline 要有生成和 diff 命令，按风险逐步收紧
 
-4. 如果是新项目：
+5. 如果是新项目：
    - 直接按模板生成完整骨架
    - 用项目使命、技术栈、目录规划填充占位符
    - 红线先保守写 3-5 条
 
-5. enforcement 必须接好：
+6. enforcement 必须接好：
    - 每条 HARNESS 红线都要有 grep / lint / CI 守门
    - 跑 bash scripts/check-redlines.sh
    - 故意写一条违规代码，确认脚本失败
    - 删除违规探针，再确认脚本通过
+   - 报错必须能定位问题，并告诉 agent 应读哪份 Guide 或往哪个边界修
 
-6. 最后输出：
+7. 行为证据必须独立：
+   - 关键用例登记 approved fixtures / 既有 contract tests / 外部样例 / 生产回放 / 人工验收之一
+   - 当前实现 agent 新生成的测试不能作为唯一验收证据
+
+8. 最后输出：
    - 生成 / 修改了哪些文件
    - 哪些红线已经机械守门
    - 哪些规则还只是文档约束
    - 哪些历史债需要 baseline
    - 哪些地方需要人工拍板
+   - 哪些重复失败应进入 Steering Log
 ```
 
 ## AI 输出格式
@@ -145,6 +176,9 @@ AI 完成后必须按这个格式收口：
 ```text
 已接入：
 - <文件 / 机制>
+
+Control Map：
+- <目标>：Guide=<...>/<类型>；Sensor=<...>/<类型>；Owner=<...>
 
 已机械守门：
 - R1 <红线>：<命令 / lint / CI>
@@ -156,6 +190,12 @@ AI 完成后必须按这个格式收口：
 历史债：
 - <仅旧项目需要>
 
+行为证据：
+- <关键用例>：<独立证据 / 批准人 / 人工验证>
+
 人工待决：
 - <需要项目负责人拍板的问题>
+
+Steering：
+- <重复失败模式 / Harness 改动候选 / 复查时间>
 ```

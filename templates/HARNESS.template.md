@@ -1,6 +1,6 @@
 # <PROJECT> 工程契约（HARNESS）
 
-> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>
+> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.0.0（来源 commit：<sha>）
 >
 > 这是 **工程侧的契约文档**：北极星原则、技术栈、目录结构、红线、决策入口。配套 [`docs/SPEC.md`](docs/SPEC.md)（业务规格）与 [`docs/workflow.md`](docs/workflow.md)（按场景的工作流）。
 >
@@ -21,6 +21,7 @@
 | 看里程碑 / DoD | [`docs/roadmap.md`](docs/roadmap.md) |
 | 起决策 | [`docs/adr/README.md`](docs/adr/README.md) |
 | 业务决议 | [`docs/decisions/README.md`](docs/decisions/README.md) |
+| 看 Guide / Sensor / Steering 闭环 | [`docs/harness-controls.md`](docs/harness-controls.md) |
 
 ---
 
@@ -123,6 +124,8 @@ redlines → typecheck → lint → test → build
 
 任何阶段失败都视为未完成；不得用 `--no-verify` 或跳过脚本绕过门禁。
 
+完整控制闭环见 [`docs/harness-controls.md`](docs/harness-controls.md)：硬门禁只登记可稳定机械判断的约束；语义与权衡进入 Inferential Review；业务意图与风险由明确责任人验收。
+
 ## 7. 测试策略
 
 | 层级 | 工具 | 环境 |
@@ -137,6 +140,7 @@ redlines → typecheck → lint → test → build
 - <环境陷阱，例如「不允许用 jsdom 测 WebGL，会假性绿」>
 - 测试不允许从公网拉数据；走本地 fixtures。
 - 资源在 `beforeEach` setup、`afterEach` 销毁，验证 mount/unmount 不泄漏。
+- 关键 Behaviour 必须有至少一种独立证据来源；当前实现 agent 新生成的测试不能成为唯一验收证据。
 
 ## 8. 红线（共 <N> 条，违反必驳回）
 
@@ -157,14 +161,25 @@ redlines → typecheck → lint → test → build
 
 > **每加一条红线，先问「谁来查、用什么命令查」。** 答不上来就不是红线。
 > 配套守门实现见 [`enforcement/README.md`](enforcement/README.md)。
+> 写不出机械命令不代表不重要：语义约束登记为 `docs/harness-controls.md` 的 Inferential Review Criterion，业务与风险登记为 Human Acceptance Decision。
 
 ## 9. 决策记录（ADR）
 
 每个重大决定写一篇 ADR，模板见 [`docs/adr/_template.md`](docs/adr/_template.md)，索引见 [`docs/adr/README.md`](docs/adr/README.md)。ADR 正文一经合入只能通过新 ADR（标记 `Supersedes`）修订；不允许直接编辑旧 ADR 正文。ADR 索引可更新状态与交叉引用。
 
-## 10. 入门 Checklist（新成员第一周）
+## 10. Harness 控制闭环
 
-- [ ] 通读本文 §0.0 → §8，使命能用一句话复述
+控制台账见 [`docs/harness-controls.md`](docs/harness-controls.md)。至少维护：
+
+- 三类目标的覆盖边界与明确不保证项；
+- 重要目标的 Guide、Sensor、生命周期、失败处置和 Owner；
+- 关键 Behaviour 的独立验收证据；
+- 重复失败的 Steering Log；
+- Legacy baseline 与模板升级记录。
+
+## 11. 入门 Checklist（新成员第一周）
+
+- [ ] 通读本文 §0.0 → §10，使命能用一句话复述
 - [ ] 阅读启动期关键 ADR
 - [ ] 跑通 `<本地 dev / test / build 命令>`
 - [ ] 提交一个不超过 100 行的 PR（修文档 / 加单测 / 修类型）熟悉流程

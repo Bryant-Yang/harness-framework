@@ -2,7 +2,7 @@
 
 > 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>
 >
-> 依赖白名单 / 黑名单 + 所有配置文件模板的单一来源。HARNESS §3、workflow §5「加改依赖」引用本文。
+> 依赖白名单 / 黑名单 + 所有配置文件模板的单一来源。HARNESS §3、workflow §1 场景 5「加改依赖」引用本文。
 
 ## 1. 依赖白名单
 
@@ -31,5 +31,5 @@
 
 1. 先查白名单 / 黑名单；命中黑名单直接驳回。
 2. 改 `package.json`（或等价），lockfile 同步提交。
-3. 起一篇 ADR（workflow §5）。
+3. 起一篇 ADR（workflow §1 场景 5）。
 4. `install --frozen-lockfile` 确认无漂移。

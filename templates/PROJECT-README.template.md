@@ -17,7 +17,8 @@
 | 改 UI 组件 | [`HARNESS.md`](HARNESS.md) §4.x UI 段 + [`docs/deps-and-configs.md`](docs/deps-and-configs.md) |
 | 加 / 改 / 删依赖 | [`docs/deps-and-configs.md`](docs/deps-and-configs.md) + [`docs/adr/README.md`](docs/adr/README.md) |
 | 起 ADR | [`docs/adr/_template.md`](docs/adr/_template.md) |
-| 评审 PR | [`HARNESS.md`](HARNESS.md) §8 红线 + [`docs/workflow.md`](docs/workflow.md) §4 提交前自查 |
+| 评审 PR | [`HARNESS.md`](HARNESS.md) §8 红线 + [`docs/workflow.md`](docs/workflow.md) §5 提交前自查 |
+| 看 Harness 覆盖 / 重复失败 | [`docs/harness-controls.md`](docs/harness-controls.md) |
 | 提交代码 / 起 commit | [`docs/git-commit-conventions.md`](docs/git-commit-conventions.md) |
 | 看里程碑 / DoD | [`docs/roadmap.md`](docs/roadmap.md) |
 
@@ -33,6 +34,7 @@
 └── docs/
     ├── SPEC.md              # 业务规格总纲
     ├── workflow.md          # 工作流：典型场景 → 文档 + 红线对照
+    ├── harness-controls.md  # Guide / Sensor / Behaviour evidence / Steering
     ├── git-commit-conventions.md
     ├── adr/                 # 决策记录（README + _template + NNNN-标题.md）
     └── decisions/           # 业务决议卡状态汇总
@@ -52,3 +54,4 @@
 - 提交前必跑 typecheck + lint + 相关测试。
 - 任何对外契约变更（接口 / 数据契约 / 红线 / 依赖）必经 ADR。
 - 业务决议卡 ⏳ 状态阻断对应里程碑启动。
+- 关键 Behaviour 不以当前实现 agent 自生成测试作为唯一证据；重复失败进入 Steering Log。

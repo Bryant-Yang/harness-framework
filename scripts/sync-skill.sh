@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 把 harness-framework skill 从本仓库（唯一源）组装并安装到各 agent 的个人技能目录。
-# 安装产物 = SKILL.md + templates/ + examples/ + reference/（三份顶层文档）。
+# 安装产物 = SKILL.md + templates/ + examples/ + reference/（四份方法文档）。
 # 改了仓库里的源文件后重跑本脚本即可同步，缓解「自包含两份漂移」。
 set -euo pipefail
 
@@ -25,6 +25,7 @@ assemble() {
   cp "$ROOT/AI-ADOPTION-PROTOCOL.md" "$dest/reference/AI-ADOPTION-PROTOCOL.md"
   cp "$ROOT/INSTANTIATION-CHECKLIST.md" "$dest/reference/INSTANTIATION-CHECKLIST.md"
   cp "$ROOT/METHODOLOGY.md" "$dest/reference/METHODOLOGY.md"
+  cp "$ROOT/docs/HARNESS-ENGINEERING.md" "$dest/reference/HARNESS-ENGINEERING.md"
 
   echo "✓ 已安装：$dest"
 }

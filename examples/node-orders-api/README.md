@@ -23,8 +23,11 @@
 | `HARNESS-redlines.md` | `templates/HARNESS.template.md §8` 填好版 |
 | `scripts/check-redlines.sh` | `templates/enforcement/scripts/check-redlines.sh` 填好版 |
 | `workflow-scenes.md` | `templates/docs/workflow.template.md §1` 填好版 |
+| `harness-controls.md` | `templates/docs/harness-controls.template.md` 填好版节选 |
 
 ## 一句话对照
 
 dw_gis3d 守「禁止 `import 'cesium'`/`ht.*`」，这个样例守「禁止 `import 'prisma'` 进 domain / 禁止 `@acme/monolith` 复活」。
 **机制完全相同，红线内容不同**——这正是框架可复用的证明。
+
+`harness-controls.md` 再向上补一层：它说明这些闸门保护什么目标、行动前读什么 Guide、失败后如何处置、谁负责 Behaviour 验收，以及重复失败怎样进入 Steering。

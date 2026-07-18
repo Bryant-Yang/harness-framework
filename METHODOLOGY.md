@@ -2,7 +2,7 @@
 
 > 作者：Bryant Yang
 >
-> 本文解释 10 个机制各自**解决什么问题、什么时候该裁剪**。读完你就能判断哪些该原样搬、哪些该砍。
+> 本文解释 11 个机制各自**解决什么问题、什么时候该裁剪**。读完你就能判断哪些该原样搬、哪些该砍。
 
 ---
 
@@ -15,6 +15,37 @@
 - **可索引**：agent 进场能在 30 秒内定位「我这个任务该读哪份」。
 - **可 grep**：红线能用一行命令自查（`import 'cesium'` / `as any` / `ht.cesium`）。
 - **可驳回**：违反不是「讨论一下」，而是直接 reject，没有例外讨论的空间。
+
+2.0 在这三个判据之上增加第四个：
+
+- **可闭环**：重要目标在行动前有 Guide，行动后有 Sensor；反馈能让 agent 自修，重复失败能进入 Human Steering。
+
+## 上位模型：Guides + Sensors + Steering
+
+Harness Framework 建设的是 coding agent 的**用户侧 outer harness**，不是模型或 agent 产品内部的 system prompt、检索与编排。单个 `AGENTS.md`、Skill、lint 或 CI 都只是控制元件，完整 Harness 必须形成闭环：
+
+```text
+Guide → Agent 变更 → Sensor → Self-correction → 再验证
+  ↑                                             │
+  └──── Human Steering：观察重复失败并升级控制 ─────┘
+```
+
+每项重要控制按四个维度登记：
+
+| 维度 | 分类 |
+| --- | --- |
+| 方向 | Feedforward Guide / Feedback Sensor |
+| 执行 | Computational / Inferential / Human |
+| 目标 | Maintainability / Architecture Fitness / Behaviour |
+| 时机 | 本地 / 提交门禁 / 人工 Review / 集成后 / 持续健康 / 运行时 |
+
+三条边界必须同时守住：
+
+1. **能计算的不要推理**：类型、依赖、格式、覆盖率等交给确定性工具。
+2. **无法形式化的不伪装成红线**：语义与权衡进入 inferential review criterion。
+3. **业务意图不让 agent 自签**：关键 Behaviour 保留独立证据和 Human acceptance。
+
+完整论述见 [`docs/HARNESS-ENGINEERING.md`](docs/HARNESS-ENGINEERING.md)。
 
 ---
 
@@ -88,7 +119,7 @@
 **做法**：`docs/SPEC.md` 是共同语言。三个关键设计：
 
 - **用例编号** `UC-<模块>-<序号>`：PR 描述里引用编号，可追溯。
-- **固定用例模板**（角色/触发、前置、数据契约、主流程、异常分支、涉及消息、验收）：强制把「异常分支」「可测验收」写出来，而不是只写 happy path。
+- **固定基础模板**（角色/触发、前置、数据契约、主流程、异常分支、涉及消息、验收）：强制把「异常分支」「可测验收」写出来，而不是只写 happy path。关键 Behaviour 再追加独立证据来源与人工验收边界。
 - **阶段一览**：用例挂到里程碑，避免无序开发。
 
 **裁剪**：纯工程库/工具可以砍掉 SPEC，只留 HARNESS。有真实业务方的产品必留。
@@ -155,11 +186,32 @@ Conventional Commits（`type(scope): subject` + body 解释 why），CI commitli
 
 ---
 
-## 机制 9 —— 提交前自查清单（六问）
+## 机制 9 —— 提交前自查清单
 
-合入前自问、全「是」才能 request review：用例编号写了吗？DoD 勾了吗？红线 grep 清零了吗？CI 全绿吗？该起的 ADR 起了吗？commit 合规吗？
+合入前自问、全「是」才能 request review：用例编号写了吗？DoD 勾了吗？红线 grep 清零了吗？CI 全绿吗？该起的 ADR 起了吗？commit 合规吗？相关 Sensor 复验了吗？关键 Behaviour 有独立证据或明确的人类验收吗？
 
 **裁剪**：问题条目按项目增删，「全是才能合」的形式必留。
+
+---
+
+## 机制 10 —— Control Map + Steering Loop
+
+**问题**：原有红线三列表能证明硬门禁有牙齿，但仍回答不了三件事：软约束由谁 review、关键行为靠什么独立证据验收、同类错误重复发生后谁升级 Harness。
+
+**做法**：实例化 [`templates/docs/harness-controls.template.md`](templates/docs/harness-controls.template.md)，维护四组轻量信息：
+
+- **覆盖边界**：Maintainability、Architecture Fitness、Behaviour 各自覆盖到哪里，明确不保证什么。
+- **Control Map**：目标 → Guide / 类型 → Sensor / 类型 → 生命周期 → 失败处置 → Owner。
+- **Behaviour Evidence**：关键用例的独立证据来源，禁止只靠当前 agent 自己生成的测试。
+- **Steering Log**：重复失败模式、根因、Harness 改动、负向验证和复查日期。
+
+约束分三级，不把所有重要事情都硬塞进 grep：
+
+1. `Deterministic Gate`：能稳定机械判断，违反必拦。
+2. `Inferential Review Criterion`：需要语义与权衡，输出证据和建议。
+3. `Human Acceptance Decision`：涉及业务意图、风险和责任，由明确责任人签收。
+
+**裁剪**：小项目可只保留 3–5 行 Control Map 和一段覆盖边界；可以裁行数，不能裁“重要目标必须有检测或人工确认路径”这个原则。
 
 ---
 
@@ -168,8 +220,8 @@ Conventional Commits（`type(scope): subject` + body 解释 why），CI commitli
 | 规模 | 建议取哪些机制 |
 | --- | --- |
 | 个人脚本 / 小工具 | 1（AGENTS）+ 2 精简版红线 |
-| 单人/小队产品 | 1 + 2 + 4（workflow）+ 7（commit）+ 5（ADR 按需） |
-| 多人 + 真实业务方 | 全部 9 个 |
-| 替换型 / 强约束迁移项目 | 全部 9 个，且红线要写「禁止旧依赖复活」这类守门规则 |
+| 单人/小队产品 | 1 + 2 + 4（workflow）+ 7（commit）+ 5（ADR 按需）+ 精简 Control Map |
+| 多人 + 真实业务方 | 全部 11 个，Behaviour evidence 不可省 |
+| 替换型 / 强约束迁移项目 | 全部 11 个，且红线要写「禁止旧依赖复活」并维护 baseline |
 
 > 原则：**机制是用来减少漂移的，不是用来摆样子的。** 没人查的契约比没有契约更糟——它制造「我们有规矩」的假象。每加一条红线、一个场景、一张卡，都要能回答「谁来查、怎么查」。

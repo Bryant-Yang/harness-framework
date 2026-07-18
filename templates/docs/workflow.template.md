@@ -4,7 +4,7 @@
 >
 > 本文是 <PROJECT> 的「开车手册」。每次任务开工前先翻这里：你处的场景需要先读哪份文档、必须守哪条红线、产出落在哪里、DoD 是什么。
 >
-> 顶层契约源仍是 [`../HARNESS.md`](../HARNESS.md) 与 [`SPEC.md`](SPEC.md)。本文不复述规则，只做「按场景的索引 + 红线提醒」。
+> 顶层契约源仍是 [`../HARNESS.md`](../HARNESS.md) 与 [`SPEC.md`](SPEC.md)。控制闭环见 [`harness-controls.md`](harness-controls.md)。本文不复述规则，只做「按场景的索引 + 红线提醒」。
 
 <!--
 这是整套框架的核心齿轮：把「一堆契约文档」转成「可操作流程」。
@@ -46,9 +46,21 @@
 | 加 / 改依赖 | [`deps-and-configs.md`](deps-and-configs.md) | 上一篇相关 ADR |
 | 起 ADR | [`adr/_template.md`](adr/_template.md) | 相关决议卡 |
 | 评审 PR | [`../HARNESS.md`](../HARNESS.md) §8 + 改动涉及 spec | 里程碑 DoD |
+| 处理重复失败 | [`harness-controls.md`](harness-controls.md) Steering Log + 失败证据 | 相关 Guide / Sensor / ADR |
 | 新成员 D1 | [`../README.md`](../README.md)、[`SPEC.md`](SPEC.md)、HARNESS §0/§8 | 术语表 |
 
-## 4. 提交前自查
+## 4. Self-correction 与 Steering
+
+当前变更失败时：
+
+1. 读取 Sensor 的编号、命中位置与修复方向；
+2. 回到对应 Guide，修复当前变更；
+3. 重跑同一 Sensor，直到通过；
+4. 不得通过忽略规则、降低阈值或删除测试制造假绿。
+
+同类失败重复出现时：将至少两个实例或趋势证据写入 [`harness-controls.md`](harness-controls.md) Steering Log，判断缺 Guide、缺 Sensor、二者冲突，还是目标不清楚。高影响 Harness 改动由 agent 提案、Owner 批准，并用负向探针验证。
+
+## 5. 提交前自查
 
 合入前对自己问，全是「是」才能 request review：
 
@@ -58,3 +70,4 @@
 4. CI 全绿了吗？
 5. 涉及新动作 / 新依赖 / 新红线例外，我起 ADR 了吗？
 6. 我的 commit message 符合 [`git-commit-conventions.md`](git-commit-conventions.md) 吗？
+7. 相关 Sensor 已复验通过，关键 Behaviour 有独立证据或明确的人类验收吗？

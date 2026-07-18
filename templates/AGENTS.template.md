@@ -34,6 +34,7 @@
 | P0 | [`HARNESS.md`](HARNESS.md) | 工程契约：北极星 / 技术栈 / 目录 / **红线（§8）** |
 | P0 | [`docs/SPEC.md`](docs/SPEC.md) | 业务规格总纲：用例索引 + 业务决议卡 |
 | P0 | [`docs/workflow.md`](docs/workflow.md) | **按场景的工作流索引**——做事前先定位你属于哪一行 |
+| P0 | [`docs/harness-controls.md`](docs/harness-controls.md) | Guide / Sensor / Behaviour evidence / Steering 控制台账 |
 | P0 | [`docs/git-commit-conventions.md`](docs/git-commit-conventions.md) | commit 格式（commitlint 强制） |
 | P1（按需） | [`docs/<模块>.md`](docs/) | 具体业务/契约文档 |
 | P1（按需） | [`docs/adr/`](docs/adr/) | 已决决策记录 |
@@ -52,6 +53,7 @@
 
 ### 4.1 干活前
 - 在 [`docs/workflow.md`](docs/workflow.md) §1 找到对应场景行，读它指向的「先读哪份」与「必守红线」。
+- 在 [`docs/harness-controls.md`](docs/harness-controls.md) 找到相关目标的 Guide、Sensor、失败处置和人工验收边界。
 - 不在场景表里的任务，先和用户确认归属。
 
 ### 4.2 写代码
@@ -73,6 +75,7 @@
 4. CI 全绿：`<CI_CMD>`
 5. 触及新依赖 / 新契约 / 红线例外，ADR 起好了？
 6. commit message 走了 conventions？
+7. 相关 Sensor 跑过并能指导修复？关键 Behaviour 有独立验收证据？
 
 ## 5. 行为风格
 
@@ -81,6 +84,7 @@
 - **改动外科手术式**：只动需要动的；不「顺手美化」邻居代码 / 注释 / 格式。
 - 拿不准就停下来问，不要瞎猜。冲突的两个模式不要平均融合——选一个、说明为什么、把另一个标出来。
 - 「Completed」只在所有验证都过之后才能说；任何步骤被跳过都要显式说明。
+- 同类失败重复出现时，不只修当前代码：把证据写入 `docs/harness-controls.md` Steering Log，提议升级 Guide / Sensor，由 Owner 批准。
 
 ## 6. 跨 agent 配置约定
 

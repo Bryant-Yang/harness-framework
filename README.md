@@ -1,9 +1,9 @@
-# Harness Framework —— 「文档即契约」协作脚手架
+# Harness Framework 2.0.0 —— 「文档即契约」到「控制闭环」
 
 > 作者：Bryant Yang
 >
 > 这是一套从 `dw_gis3d` 工程沉淀出来的**通用工程契约框架**，与具体技术栈无关。
-> 它解决一个问题：**让任何 AI 编码 agent 进场即知道「这是什么项目、不能碰什么、产出落在哪、提交前必跑什么」**，而不是每个会话重新解释一遍。
+> 它解决一个问题：**让任何 AI 编码 agent 进场即知道「这是什么项目、不能碰什么、产出落在哪、提交前必跑什么」；做完后还能被 Sensor 检测、自我修正，并把重复失败反馈到下一版契约。**
 
 > **读者是 agent,不是人。** Claude Code / Codex / Cursor / Gemini CLI / Google 反重力 Antigravity 等各家工具找的入口文件名不同(`CLAUDE.md` / `AGENTS.md` / `GEMINI.md` …)。本框架以 `AGENTS.md` 为**唯一契约源**(已是 Linux 基金会主推的开放标准,20+ 工具原生读取),其余工具用**薄指针文件**指回它——见下方「机制 0」。
 
@@ -13,9 +13,19 @@
 
 它不是代码库，而是一组**文档模板 + 协作机制**。核心思想：
 
-> **把项目的「钢印级约束」固化成可 grep、可驳回、可索引的文档，而不是散落在人脑和聊天记录里。**
+> **把项目的「钢印级约束」固化成可索引的 Guides，把关键风险编译成可执行的 Sensors，再用 Self-correction 与 Human Steering 形成闭环。**
 
-10 个可复用机制（详见 [`METHODOLOGY.md`](METHODOLOGY.md)）：
+2.0 在原有 docs-as-contract 与红线 enforcement 之上补齐了 Harness Engineering 的上位模型：
+
+```text
+Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
+       ↑                                      │
+       └──────── Human Steering：重复失败升级 Harness ────────┘
+```
+
+完整概念与边界见 [`docs/HARNESS-ENGINEERING.md`](docs/HARNESS-ENGINEERING.md)。框架仍然是方法与契约库，不是重型 agent 编排平台。
+
+11 个可复用机制（详见 [`METHODOLOGY.md`](METHODOLOGY.md)）：
 
 | # | 机制 | 模板文件 | 一句话作用 |
 | --- | --- | --- | --- |
@@ -29,7 +39,8 @@
 | 6 | **业务决议卡** | `docs/decisions/` | 业务「系统该做什么」的待决问题，⏳ 状态可阻断里程碑 |
 | 7 | **提交规范** | `docs/git-commit-conventions.template.md` | Conventional Commits，CI commitlint 强制 |
 | 8 | **文档地图（按角色）** | `PROJECT-README.template.md` | 不同角色/任务的文档入口表 |
-| 9 | **提交前自查清单** | 内嵌于 workflow / AGENTS | 六问全「是」才能 request review |
+| 9 | **提交前自查清单** | 内嵌于 workflow / AGENTS | 全部问题为「是」才能 request review |
+| 10 | **控制台账 + Steering Loop** | `docs/harness-controls.template.md` | 分别登记 Guide / Sensor 类型、时机与 Owner，并用重复失败持续升级 Harness |
 
 ---
 
@@ -56,8 +67,10 @@
 
 ```
 harness_extract/
+├── VERSION                            # 框架版本
 ├── README.md                          # 本文：框架是什么 + 如何实例化
 ├── METHODOLOGY.md                     # 方法论：每个机制为什么存在、如何裁剪
+├── docs/HARNESS-ENGINEERING.md        # Guides / Sensors / Steering 上位模型
 ├── AI-ADOPTION-PROTOCOL.md            # AI 自动接入协议：新旧项目统一落地流程
 ├── INSTANTIATION-CHECKLIST.md         # 复用到新工程的逐步检查清单
 ├── LICENSE                            # MIT
@@ -82,6 +95,7 @@ harness_extract/
     └── docs/
         ├── SPEC.template.md
         ├── workflow.template.md
+        ├── harness-controls.template.md # 控制台账 + Behaviour evidence + Steering log
         ├── git-commit-conventions.template.md
         ├── roadmap.template.md           # 支撑文档：里程碑 + DoD
         ├── deps-and-configs.template.md  # 支撑文档：依赖白/黑名单 + 配置
@@ -130,7 +144,8 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 新旧项目都可以按 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 执行。核心流程固定为：
 
 ```text
-发现项目事实 → 实例化文档 → 生成红线 → 接 enforcement → 负向验证 → 输出未决项
+发现事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement
+→ 负向验证与自修 → 补行为证据 → 输出 Steering / 未决项
 ```
 
 把协议里的「给 AI 的固定指令」交给 Codex / Claude Code / Gemini CLI 等 agent，即可让 AI 自动审计项目、填充模板、接红线守门并完成负向验证。
@@ -144,7 +159,7 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 bash scripts/sync-skill.sh
 ```
 
-脚本以**本仓库为唯一源**，把 `SKILL.md + templates/ + examples/ + reference/`（三份顶层文档）
+脚本以**本仓库为唯一源**，把 `SKILL.md + templates/ + examples/ + reference/`（四份方法文档）
 组装并安装到：
 
 - `~/.claude/skills/harness-framework/`（Claude Code）

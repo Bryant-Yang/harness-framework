@@ -5,6 +5,8 @@
 > 红线写在 `HARNESS.md §8` 里只是**声明**；真正起作用是因为它被编译成**机械闸门**——
 > agent 违反就过不了 lint / CI，合不进主分支。**没有这一层，红线就是没人查的装饰。**
 
+这一层只负责 **Deterministic Gates**。需要语义权衡的规则进入 `docs/harness-controls.md` 的 Inferential Review Criteria；业务意图、风险和责任进入 Human Acceptance Decisions。不要为了“全部自动化”把软判断硬塞进高误报 grep。
+
 ## 核心抽象：契约是「每条红线必须有机械守门命令」，工具是实现细节
 
 框架真正要求的**不是「用 eslint」**，而是「每条红线都得有一道能机械执行的闸门」。守门用 eslint / ArchUnit / import-linter / grep 都行——**换实现、不换契约**。
@@ -44,6 +46,18 @@ enforcement/
 
 > 这条判据把「红线」从一句口号变成可执行物。`HARNESS.template.md §8` 的三列表
 > （红线 \| 守门命令 \| 谁拦）就是强制你对每条红线填满这一行。
+
+## Sensor 输出必须适合自我修正
+
+只输出 `failed` 不够。每个门禁错误至少包含：
+
+- 控制或红线编号；
+- 文件与位置；
+- 违反了什么目标；
+- 应回读哪份 Guide，或应移动到哪个合法边界；
+- 修复后重跑的同一条命令。
+
+反馈越明确，agent 越能在交给人之前完成 Self-correction。不要在报错里放无法执行的泛泛建议。
 
 ## 接线步骤
 
