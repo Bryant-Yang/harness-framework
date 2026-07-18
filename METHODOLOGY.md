@@ -30,7 +30,7 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
   └──── Human Steering：观察重复失败并升级控制 ─────┘
 ```
 
-每项重要控制按四个维度登记：
+四个维度用于审计 Harness 的覆盖与错配，不要求每条控制填写完整矩阵：
 
 | 维度 | 分类 |
 | --- | --- |
@@ -198,12 +198,12 @@ Conventional Commits（`type(scope): subject` + body 解释 why），CI commitli
 
 **问题**：原有红线三列表能证明硬门禁有牙齿，但仍回答不了三件事：软约束由谁 review、关键行为靠什么独立证据验收、同类错误重复发生后谁升级 Harness。
 
-**做法**：实例化 [`templates/docs/harness-controls.template.md`](templates/docs/harness-controls.template.md)，维护四组轻量信息：
+**做法**：实例化 [`templates/docs/harness-controls.template.md`](templates/docs/harness-controls.template.md)，维护三组轻量记录和一组引用：
 
 - **覆盖边界**：Maintainability、Architecture Fitness、Behaviour 各自覆盖到哪里，明确不保证什么。
-- **Control Map**：目标 → Guide / 类型 → Sensor / 类型 → 生命周期 → 失败处置 → Owner。
-- **Behaviour Evidence**：关键用例的独立证据来源，禁止只靠当前 agent 自己生成的测试。
-- **Steering Log**：重复失败模式、根因、Harness 改动、负向验证和复查日期。
+- **Control Map**：最小只填目标 → Guide → Sensor / 人工确认 → 失败处置 → Owner；类型、目标类别和生命周期仅在审计发现歧义时追加。
+- **Behaviour Evidence 引用**：证据唯一写在 `SPEC.md`，Controls 只保存用例锚点与相关 Control，避免双写。
+- **Steering Log**：只有同类失败至少出现两次或形成趋势证据后才记录；初始化时不建空台账。
 
 约束分三级，不把所有重要事情都硬塞进 grep：
 

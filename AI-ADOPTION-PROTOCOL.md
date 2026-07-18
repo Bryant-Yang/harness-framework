@@ -3,7 +3,7 @@
 > 作者：Bryant Yang
 >
 > 本文把 harness 的使用方式固化成一套 AI 可执行协议。无论新项目还是旧项目，都让 AI 按这套流程完成：
-> **审计事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement → 负向验证与自修 → 补行为证据 → 输出 Steering 与未决项**。
+> **审计事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement → 负向验证与自修 → 在 SPEC 补行为证据 → 按触发条件输出 Steering 与未决项**。
 
 ## 适用场景
 
@@ -34,8 +34,8 @@
    commit 规范和必要指针文件，并记录框架版本与本地差异。
 
 3. Control Mapping
-   把重要目标映射为 Guide、Guide 类型、Sensor、Sensor 类型、生命周期、失败处置和 Owner；
-   标明 Maintainability / Architecture Fitness / Behaviour 覆盖边界。
+   把重要目标最小映射为 Guide、Sensor / 人工确认、失败处置和 Owner；
+   用覆盖边界审计 Maintainability / Architecture Fitness / Behaviour，只对疑难 Control 追加类型与生命周期注记。
 
 4. Redline Design
    从项目风险里提炼 3-8 条可机械检查的红线，并登记到 HARNESS §8。
@@ -47,10 +47,10 @@
    故意写一条违规探针，确认守门失败且反馈足以指导修复；删除探针，再确认守门通过。
 
 7. Behaviour Evidence
-   对关键用例登记独立证据、批准人、自动检查和人工验证；不把 AI 自生成测试当唯一证据。
+   在 SPEC 对关键用例登记独立证据、批准人和人工边界；Controls 只引用用例，不双写证据。
 
 8. Handoff + Steering
-   输出已接好的控制、红线、覆盖边界、历史债 baseline、人工待决和首轮 Steering 观察项。
+   输出已接好的控制、红线、覆盖边界、历史债 baseline 和人工待决；只有同类失败至少两次或已有趋势证据时才输出 Steering。
 ```
 
 ## 新项目执行口径
@@ -63,7 +63,7 @@
 - 填入 `<PROJECT>`、`<AUTHOR>`、`<MISSION>`、`<YYYY-MM-DD>`、`<语言>`、`<CI_CMD>`。
 - 先写 3-5 条红线，不要一开始堆满。
 - 直接把 enforcement 接进 CI。
-- 对至少一个关键行为登记独立验收证据；没有真实业务的工具库可标记为“不适用”。
+- 对至少一个关键行为在 `SPEC.md` 登记独立验收证据；没有真实业务的工具库可标记为“不适用”。
 
 完成标准：
 
@@ -133,7 +133,8 @@ R1 被替换的旧依赖禁止任何形式复活
    - scripts/check-redlines.sh
 
 3. 建立 Control Map：
-   - 每个重要目标分别登记 Guide 类型与 Sensor 类型，再记录运行时机、失败处置和 Owner
+   - 每个重要目标最小登记 Guide、Sensor / 人工确认、失败处置和 Owner
+   - 只有执行方式、信任边界或成本不清时，才追加 Guide/Sensor 类型、目标类别和生命周期
    - 区分 Deterministic Gate / Inferential Review Criterion / Human Acceptance Decision
    - 明确 Maintainability / Architecture Fitness / Behaviour 的覆盖边界和不保证项
 
@@ -157,8 +158,9 @@ R1 被替换的旧依赖禁止任何形式复活
    - 报错必须能定位问题，并告诉 agent 应读哪份 Guide 或往哪个边界修
 
 7. 行为证据必须独立：
-   - 关键用例登记 approved fixtures / 既有 contract tests / 外部样例 / 生产回放 / 人工验收之一
+   - 在 SPEC 为关键用例登记 approved fixtures / 既有 contract tests / 外部样例 / 生产回放 / 人工验收之一
    - 当前实现 agent 新生成的测试不能作为唯一验收证据
+   - harness-controls 只引用 SPEC 用例锚点，不复制证据内容
 
 8. 最后输出：
    - 生成 / 修改了哪些文件
@@ -166,7 +168,7 @@ R1 被替换的旧依赖禁止任何形式复活
    - 哪些规则还只是文档约束
    - 哪些历史债需要 baseline
    - 哪些地方需要人工拍板
-   - 哪些重复失败应进入 Steering Log
+   - 仅当同类失败至少两次或已有趋势证据时，说明哪些问题进入 Steering Log
 ```
 
 ## AI 输出格式
@@ -178,7 +180,7 @@ AI 完成后必须按这个格式收口：
 - <文件 / 机制>
 
 Control Map：
-- <目标>：Guide=<...>/<类型>；Sensor=<...>/<类型>；Owner=<...>
+- <目标>：Guide=<...>；Sensor/人工确认=<...>；处置=<...>；Owner=<...>
 
 已机械守门：
 - R1 <红线>：<命令 / lint / CI>
@@ -191,11 +193,11 @@ Control Map：
 - <仅旧项目需要>
 
 行为证据：
-- <关键用例>：<独立证据 / 批准人 / 人工验证>
+- <SPEC 用例锚点>：<独立证据 / 批准人 / 人工验证>
 
 人工待决：
 - <需要项目负责人拍板的问题>
 
-Steering：
+Steering（仅达到触发条件时输出）：
 - <重复失败模式 / Harness 改动候选 / 复查时间>
 ```

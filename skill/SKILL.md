@@ -25,12 +25,12 @@ description: Use when 给新项目铺设、或给已有代码库接入 AI agent 
 
 1. **Project Audit + Harnessability** — 识别技术栈、边界、测试隔离性、反馈质量、历史债与行为证据
 2. **Instantiate** — 实例化 AGENTS、HARNESS、workflow、harness-controls、commit 规范与必要指针
-3. **Control Map** — 分别登记 Guide 类型与 Sensor 类型，再记录生命周期 / 失败处置 / Owner
+3. **Control Map** — 最小登记 Guide、Sensor / 人工确认、失败处置与 Owner；疑难项才追加类型和生命周期
 4. **Redline Design** — 提炼 3-8 条**可机械检查**的红线，登记到 HARNESS §8
 5. **Enforcement** — 每条红线接 grep / lint / commitlint / CI 守门（机制 2.5）
 6. **Negative Verification + Self-correction** — 违规探针确认失败且反馈可修；删探针再确认通过
-7. **Behaviour Evidence** — 关键用例登记独立证据与人类验收边界，不让 agent 自己签收
-8. **Handoff + Steering** — 输出覆盖边界、控制、验证、baseline、人工待决与重复失败观察项
+7. **Behaviour Evidence** — 在 SPEC 登记关键用例的独立证据与人类验收边界；Controls 只引用
+8. **Handoff + Steering** — 输出覆盖边界、控制、验证、baseline 与人工待决；达到重复失败触发条件时才输出 Steering
 
 ## 新项目 vs 旧项目
 - **新项目**：直接铺完整骨架，红线先保守写 3-5 条。判据见 protocol「新项目执行口径」。

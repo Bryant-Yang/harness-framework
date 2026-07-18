@@ -34,7 +34,7 @@
 └── docs/
     ├── SPEC.md              # 业务规格总纲
     ├── workflow.md          # 工作流：典型场景 → 文档 + 红线对照
-    ├── harness-controls.md  # Guide / Sensor / Behaviour evidence / Steering
+    ├── harness-controls.md  # Guide / Sensor / SPEC evidence 引用 / 事件型 Steering
     ├── git-commit-conventions.md
     ├── adr/                 # 决策记录（README + _template + NNNN-标题.md）
     └── decisions/           # 业务决议卡状态汇总
@@ -54,4 +54,4 @@
 - 提交前必跑 typecheck + lint + 相关测试。
 - 任何对外契约变更（接口 / 数据契约 / 红线 / 依赖）必经 ADR。
 - 业务决议卡 ⏳ 状态阻断对应里程碑启动。
-- 关键 Behaviour 不以当前实现 agent 自生成测试作为唯一证据；重复失败进入 Steering Log。
+- 关键 Behaviour 的独立证据以 SPEC 为唯一事实源；同类失败至少两次或形成趋势后才进入 Steering Log。

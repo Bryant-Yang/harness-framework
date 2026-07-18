@@ -43,11 +43,12 @@
 ## 五、建立控制闭环
 
 - [ ] 在 `docs/harness-controls.md` 写清 Maintainability / Architecture Fitness / Behaviour 的覆盖边界
-- [ ] 每个重要目标分别登记 Guide 类型与 Sensor 类型，并填写生命周期、失败处置和 Owner
+- [ ] 每个重要目标最小登记 Guide、Sensor / 人工确认、失败处置和 Owner
+- [ ] 仅对执行方式、信任边界或成本不清的 Control 追加类型、目标类别和生命周期注记
 - [ ] 约束分成 Deterministic Gate / Inferential Review Criterion / Human Acceptance Decision
-- [ ] 关键 Behaviour 至少有一种独立证据，不能只靠当前 agent 自己生成的测试
+- [ ] 关键 Behaviour 的独立证据只写在 `SPEC.md`；Controls 仅引用用例锚点，不双写
 - [ ] Legacy 项目的 baseline 有生成命令与只拦新增的 diff 命令
-- [ ] Steering Log 已指定 Owner 与复查节奏
+- [ ] Steering 采用事件触发：同类失败至少两次或出现趋势后才建记录；初始化时不填空行
 
 ## 六、清理示例
 
@@ -106,4 +107,4 @@
 5. **探针清理**：违规探针是否已删除，最终 `check-redlines.sh` 是否恢复通过？
 6. **可闭环**：重要目标是否有 Guide、Sensor/人工确认、失败处置和 Owner？
 7. **行为可信**：关键 Behaviour 是否有独立于当前实现生成过程的验收证据？
-8. **可演进**：重复失败是否进入 Steering Log，模板版本与本地差异是否可追溯？
+8. **可演进**：达到触发条件的重复失败是否进入 Steering Log，模板版本与本地差异是否可追溯？

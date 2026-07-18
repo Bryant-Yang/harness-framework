@@ -1,5 +1,7 @@
 # AGENTS.md — node-orders-api Agent 协作契约
 
+<!-- harness:controls-read-policy=on-demand -->
+
 > 作者：Bryant Yang　最近更新：2026-06-06
 >
 > 这是 `templates/AGENTS.template.md` 的填好版样例，用来展示 harness 落到一个
@@ -18,6 +20,8 @@ Node 20 + TypeScript + Fastify + Postgres（Prisma）的订单服务。
 | P0 | `HARNESS-redlines.md` | 填好版红线三列表 |
 | P0 | `workflow-scenes.md` | 填好版场景表 |
 | P0 | `scripts/check-redlines.sh` | 可执行红线 grep 守门 |
+| P0 | `SPEC.md` | 关键 Behaviour 的独立证据与人工验收边界 |
+| P1（按需） | `harness-controls.md` | Guide / Sensor 与事件型 Steering；相关场景才读 |
 
 最小入场顺序：`README.md` → `workflow-scenes.md` 定位场景 → `HARNESS-redlines.md` 红线 → `scripts/check-redlines.sh` 自查。
 

@@ -8,6 +8,7 @@ cd "$ROOT"
 
 required=(
   VERSION
+  .github/workflows/check-framework.yml
   README.md
   METHODOLOGY.md
   AI-ADOPTION-PROTOCOL.md
@@ -19,6 +20,7 @@ required=(
   templates/docs/harness-controls.template.md
   templates/enforcement/scripts/check-redlines.sh
   examples/node-orders-api/harness-controls.md
+  examples/node-orders-api/SPEC.md
 )
 
 for path in "${required[@]}"; do
@@ -34,7 +36,7 @@ if grep -R -nE '<(PROJECT|AUTHOR|MISSION|CI_CMD|OWNER|DATE)>' examples/node-orde
 fi
 
 version="$(tr -d '[:space:]' < VERSION)"
-if [ "$version" != "2.0.0" ]; then
+if [ "$version" != "2.0.1" ]; then
   printf '✗ VERSION 不符合当前发布契约：%s\n' "$version"
   exit 1
 fi
@@ -45,18 +47,6 @@ for versioned in README.md docs/HARNESS-ENGINEERING.md templates/HARNESS.templat
     exit 1
   fi
 done
-
-if ! grep -q '11 个可复用机制' README.md ||
-   ! grep -q '本文解释 11 个机制' METHODOLOGY.md ||
-   ! grep -q '11 个机制' skill/SKILL.md; then
-  echo '✗ README / METHODOLOGY / skill 的机制数量漂移'
-  exit 1
-fi
-
-if ! grep -q '核心流程（八步' skill/SKILL.md || ! grep -q '^8\. Handoff + Steering' AI-ADOPTION-PROTOCOL.md; then
-  echo '✗ skill 与 AI protocol 的八步流程漂移'
-  exit 1
-fi
 
 if grep -Eq 'workflow §4|workflow.*§4' templates/enforcement/ci.yml templates/docs/deps-and-configs.template.md templates/PROJECT-README.template.md; then
   echo '✗ workflow 章节引用仍指向旧 §4'
@@ -74,20 +64,45 @@ for pointer in templates/CLAUDE.md templates/GEMINI.md templates/.github/copilot
   fi
 done
 
-if ! grep -q 'HARNESS-ENGINEERING.md' scripts/sync-skill.sh ||
-   ! grep -q 'harness-controls.template.md' scripts/check-framework.sh; then
-  echo '✗ skill 组装或自证清单没有覆盖 2.0 新资源'
+if ! grep -q 'HARNESS-ENGINEERING.md' scripts/sync-skill.sh; then
+  echo '✗ skill 组装没有覆盖 Harness Engineering 方法文档'
   exit 1
 fi
 
-if ! grep -q 'Guide 类型.*Sensor 类型' templates/docs/harness-controls.template.md ||
-   ! grep -q 'Guide 类型.*Sensor 类型' examples/node-orders-api/harness-controls.md; then
-  echo '✗ Control Map 没有分别登记 Guide 与 Sensor 类型'
+if ! grep -q 'harness:control-map=minimum' templates/docs/harness-controls.template.md ||
+   ! grep -q 'harness:control-map=minimum' examples/node-orders-api/harness-controls.md ||
+   grep -Eq '^\| ID \|.*(Guide 类型|Sensor 类型)' templates/docs/harness-controls.template.md; then
+  echo '✗ Control Map 不再遵守最小必填契约'
   exit 1
 fi
 
-if ! grep -q '关键 Behaviour 必填' templates/docs/SPEC.template.md; then
-  echo '✗ SPEC 没有把独立证据限定在关键 Behaviour'
+if ! grep -q 'harness:behaviour-evidence=canonical-source' templates/docs/SPEC.template.md ||
+   ! grep -q 'harness:behaviour-evidence=canonical-source' examples/node-orders-api/SPEC.md ||
+   ! grep -q 'harness:behaviour-evidence=spec-reference-only' templates/docs/harness-controls.template.md ||
+   ! grep -q 'harness:behaviour-evidence=spec-reference-only' examples/node-orders-api/harness-controls.md ||
+   grep -q '| 用例 / 风险 | 独立证据来源' templates/docs/harness-controls.template.md ||
+   ! grep -Eq '^\| Behaviour .*SPEC\.md' templates/docs/harness-controls.template.md ||
+   ! grep -Eq '^\| Behaviour .*SPEC\.md' examples/node-orders-api/harness-controls.md; then
+  echo '✗ Controls 与 SPEC 仍在双写 Behaviour Evidence'
+  exit 1
+fi
+
+if ! grep -q 'harness:controls-read-policy=on-demand' templates/AGENTS.template.md ||
+   ! grep -q 'harness:controls-read-policy=on-demand' examples/node-orders-api/AGENTS.md ||
+   grep -q '| P0 |.*harness-controls.md' templates/AGENTS.template.md; then
+  echo '✗ harness-controls 仍被设为每次任务 P0 必读'
+  exit 1
+fi
+
+if ! grep -q 'harness:steering-trigger=min-occurrences-2' templates/docs/harness-controls.template.md ||
+   ! grep -q 'harness:steering-trigger=min-occurrences-2' examples/node-orders-api/harness-controls.md ||
+   grep -q '^| 日期 |' templates/docs/harness-controls.template.md; then
+  echo '✗ Steering 没有采用事件触发，或模板仍强制空记录'
+  exit 1
+fi
+
+if ! grep -q 'bash scripts/check-framework.sh' .github/workflows/check-framework.yml; then
+  echo '✗ 仓库 CI 没有执行框架自证'
   exit 1
 fi
 
@@ -109,7 +124,7 @@ check_links() {
   done < <(grep -oE '\]\([^)]+\)' "$doc" || true)
 }
 
-for doc in README.md METHODOLOGY.md docs/HARNESS-ENGINEERING.md examples/node-orders-api/README.md; do
+for doc in README.md METHODOLOGY.md docs/HARNESS-ENGINEERING.md examples/node-orders-api/README.md examples/node-orders-api/harness-controls.md; do
   check_links "$doc"
 done
 

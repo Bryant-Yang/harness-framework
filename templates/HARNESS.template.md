@@ -1,6 +1,6 @@
 # <PROJECT> 工程契约（HARNESS）
 
-> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.0.0（来源 commit：<sha>）
+> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.0.1（来源 commit：<sha>）
 >
 > 这是 **工程侧的契约文档**：北极星原则、技术栈、目录结构、红线、决策入口。配套 [`docs/SPEC.md`](docs/SPEC.md)（业务规格）与 [`docs/workflow.md`](docs/workflow.md)（按场景的工作流）。
 >
@@ -172,9 +172,9 @@ redlines → typecheck → lint → test → build
 控制台账见 [`docs/harness-controls.md`](docs/harness-controls.md)。至少维护：
 
 - 三类目标的覆盖边界与明确不保证项；
-- 重要目标的 Guide、Sensor、生命周期、失败处置和 Owner；
-- 关键 Behaviour 的独立验收证据；
-- 重复失败的 Steering Log；
+- 重要目标的 Guide、Sensor / 人工确认、失败处置和 Owner；疑难项才追加类型与生命周期；
+- 指向 `SPEC.md` 中关键 Behaviour 独立验收证据的引用；
+- 达到触发条件后才建立的 Steering 记录；
 - Legacy baseline 与模板升级记录。
 
 ## 11. 入门 Checklist（新成员第一周）

@@ -1,4 +1,4 @@
-# Harness Framework 2.0.0 —— 「文档即契约」到「控制闭环」
+# Harness Framework 2.0.1 —— 「文档即契约」到「控制闭环」
 
 > 作者：Bryant Yang
 >
@@ -40,7 +40,7 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 | 7 | **提交规范** | `docs/git-commit-conventions.template.md` | Conventional Commits，CI commitlint 强制 |
 | 8 | **文档地图（按角色）** | `PROJECT-README.template.md` | 不同角色/任务的文档入口表 |
 | 9 | **提交前自查清单** | 内嵌于 workflow / AGENTS | 全部问题为「是」才能 request review |
-| 10 | **控制台账 + Steering Loop** | `docs/harness-controls.template.md` | 分别登记 Guide / Sensor 类型、时机与 Owner，并用重复失败持续升级 Harness |
+| 10 | **控制台账 + Steering Loop** | `docs/harness-controls.template.md` | 最小登记 Guide、Sensor、处置与 Owner；只对疑难控制做分类审计 |
 
 ---
 
@@ -75,6 +75,8 @@ harness_extract/
 ├── INSTANTIATION-CHECKLIST.md         # 复用到新工程的逐步检查清单
 ├── LICENSE                            # MIT
 ├── skill/SKILL.md                     # 把本框架封装成 agent 可发现的 skill（机制入口）
+├── .github/workflows/check-framework.yml # 本仓最小自证 CI，只运行框架自检
+├── scripts/check-framework.sh         # 结构、链接、baseline、组装与负向探针自证
 ├── scripts/sync-skill.sh             # 把 skill 安装到 Claude Code / Codex 个人技能目录
 └── templates/                         # 拷过去即可（带 <占位符> 的填空，指针文件直接用）
     ├── AGENTS.template.md              # ← 唯一真契约（机制 1）
@@ -95,7 +97,7 @@ harness_extract/
     └── docs/
         ├── SPEC.template.md
         ├── workflow.template.md
-        ├── harness-controls.template.md # 控制台账 + Behaviour evidence + Steering log
+        ├── harness-controls.template.md # 控制台账 + SPEC evidence 引用 + 事件型 Steering
         ├── git-commit-conventions.template.md
         ├── roadmap.template.md           # 支撑文档：里程碑 + DoD
         ├── deps-and-configs.template.md  # 支撑文档：依赖白/黑名单 + 配置
@@ -111,6 +113,8 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 ├── README.md                          #   对照「机制相同、内容不同」
 ├── HARNESS-redlines.md                #   §8 三列表填好版
 ├── workflow-scenes.md                 #   场景表填好版
+├── SPEC.md                            #   Behaviour Evidence 唯一事实源节选
+├── harness-controls.md                #   Control Map、SPEC 引用与事件型 Steering
 └── scripts/check-redlines.sh          #   可运行、已验证能拦违规
 ```
 
@@ -145,7 +149,7 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 
 ```text
 发现事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement
-→ 负向验证与自修 → 补行为证据 → 输出 Steering / 未决项
+→ 负向验证与自修 → 在 SPEC 补行为证据 → 按触发条件输出 Steering / 未决项
 ```
 
 把协议里的「给 AI 的固定指令」交给 Codex / Claude Code / Gemini CLI 等 agent，即可让 AI 自动审计项目、填充模板、接红线守门并完成负向验证。

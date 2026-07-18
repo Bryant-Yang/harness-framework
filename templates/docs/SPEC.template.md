@@ -1,5 +1,7 @@
 # <PROJECT> 业务规格（SPEC）
 
+<!-- harness:behaviour-evidence=canonical-source -->
+
 > <PROJECT> 业务用例集。本文是业务、产品、开发的**共同语言**。
 >
 > 工程契约见 [`../HARNESS.md`](../HARNESS.md)；按场景的工作流见 [`workflow.md`](workflow.md)。

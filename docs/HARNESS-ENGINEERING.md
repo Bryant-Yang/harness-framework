@@ -1,6 +1,6 @@
 # Harness Engineering 上位模型
 
-> Harness Framework 2.0.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
+> Harness Framework 2.0.1 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
 > [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html)
 > 中提出的控制系统视角，落成一套轻量、可实例化的工程契约方法。
 >
@@ -32,13 +32,13 @@ Guide 预先引导
 - **Guides（feedforward）**：行动前提高首次做对的概率。
 - **Sensors（feedback）**：行动后提供可定位、可修复、可复验的信号。
 - **Self-correction**：当前变更内的修正循环。
-- **Human Steering**：观察重复失败，持续校准整个 harness。
+- **Human Steering**：同类失败至少出现两次或形成趋势证据后，持续校准整个 harness；单次失败只进入当前任务的 Self-correction。
 
 只有 Guide，没有 Sensor，无法证明规则生效；只有 Sensor，没有 Guide，agent 会反复犯同一种错误。
 
-## 3. 四个正交维度
+## 3. 四个正交维度：审计视角，不是填表任务
 
-每项重要控制都应能回答四个问题。
+四个维度用于审计 Harness 是否存在盲区、错配或过高成本，不要求每条控制都填满一张四维矩阵。项目落地时，Control Map 只记录行动所需的 Guide、Sensor / 人工确认、失败处置和 Owner；只有出现歧义时才追加执行类型、目标类别和生命周期注记。
 
 | 维度 | 选项 | 要回答的问题 |
 | --- | --- | --- |

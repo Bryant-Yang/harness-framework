@@ -58,7 +58,7 @@
 3. 重跑同一 Sensor，直到通过；
 4. 不得通过忽略规则、降低阈值或删除测试制造假绿。
 
-同类失败重复出现时：将至少两个实例或趋势证据写入 [`harness-controls.md`](harness-controls.md) Steering Log，判断缺 Guide、缺 Sensor、二者冲突，还是目标不清楚。高影响 Harness 改动由 agent 提案、Owner 批准，并用负向探针验证。
+同类失败至少出现两次或形成趋势证据时：将证据写入 [`harness-controls.md`](harness-controls.md) Steering Log，判断缺 Guide、缺 Sensor、二者冲突，还是目标不清楚。单次失败只修当前问题；高影响 Harness 改动由 agent 提案、Owner 批准，并用负向探针验证。
 
 ## 5. 提交前自查
 
