@@ -36,7 +36,7 @@ if grep -R -nE '<(PROJECT|AUTHOR|MISSION|CI_CMD|OWNER|DATE)>' examples/node-orde
 fi
 
 version="$(tr -d '[:space:]' < VERSION)"
-if [ "$version" != "2.0.1" ]; then
+if [ "$version" != "2.1.0" ]; then
   printf '✗ VERSION 不符合当前发布契约：%s\n' "$version"
   exit 1
 fi
@@ -66,6 +66,13 @@ done
 
 if ! grep -q 'HARNESS-ENGINEERING.md' scripts/sync-skill.sh; then
   echo '✗ skill 组装没有覆盖 Harness Engineering 方法文档'
+  exit 1
+fi
+
+if ! grep -q 'harness:maintenance-routing=delta-impact' AI-ADOPTION-PROTOCOL.md ||
+   ! grep -q 'harness:ai-assets-audit=conditional' AI-ADOPTION-PROTOCOL.md ||
+   ! grep -q 'harness:boundary-sensor=producer-contract-consumer' docs/HARNESS-ENGINEERING.md; then
+  echo '✗ 2.1 增量维护、条件式资产审计或双端边界 Sensor 契约缺失'
   exit 1
 fi
 
@@ -171,10 +178,15 @@ for assembled in \
   "$sync_root/codex/harness-framework/templates/docs/harness-controls.template.md" \
   "$sync_root/codex/harness-framework/examples/node-orders-api/harness-controls.md"; do
   if [ ! -f "$assembled" ]; then
-    printf '✗ skill 组装缺少 2.0 资源：%s\n' "$assembled"
+    printf '✗ skill 组装缺少 2.1 资源：%s\n' "$assembled"
     exit 1
   fi
 done
+if ! grep -q 'harness:maintenance-routing=delta-impact' "$sync_root/codex/harness-framework/reference/AI-ADOPTION-PROTOCOL.md" ||
+   ! grep -q 'harness:boundary-sensor=producer-contract-consumer' "$sync_root/codex/harness-framework/reference/HARNESS-ENGINEERING.md"; then
+  echo '✗ skill 组装没有携带 2.1 维护与边界契约'
+  exit 1
+fi
 cleanup_sync
 trap - EXIT
 

@@ -4,7 +4,7 @@
 <!-- harness:behaviour-evidence=spec-reference-only -->
 <!-- harness:steering-trigger=min-occurrences-2 -->
 
-> Framework version：2.0.1　项目实例版本：<YYYY-MM-DD / commit>
+> Framework version：2.1.0　项目实例版本：<YYYY-MM-DD / commit>
 >
 > 本文把重要目标映射为 Guide、Sensor / 人工确认、失败处置和责任人。它不替代 `HARNESS.md`、`SPEC.md`
 > 或具体工具配置，只负责证明控制闭环是否完整。
@@ -60,6 +60,6 @@
 ## 7. Baseline 与模板升级
 
 - **Legacy baseline**：<基线文件 / 生成命令 / 只拦新增的比较命令>。参考形态：`{ rg -n '<模式>' src || true; } | sed -E 's/^([^:]+):[0-9]+:/\1:/' | sort > docs/baselines/R1.txt` 生成去行号基线；CI 用同一命令生成当前命中，再执行 `new_hits="$(comm -13 <baseline> <current>)"; [ -z "$new_hits" ] || { printf '%s\n' "$new_hits"; exit 1; }`。`comm` 自身不会因有输出而失败，所以必须显式判断；`|| true` 允许零命中，去掉行号可避免无关代码移动制造假新增。
-- **模板来源**：Harness Framework `2.0.1`，来源 commit `<sha>`。
+- **模板来源**：Harness Framework `2.1.0`，来源 commit `<sha>`。
 - **本地差异**：<哪些是项目事实，升级时不得自动覆盖>。
 - **升级策略**：先看上游 diff，区分 bug fix / optional control / breaking policy，再人工合并并重跑负向验证。

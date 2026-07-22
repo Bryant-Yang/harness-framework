@@ -213,6 +213,12 @@ Conventional Commits（`type(scope): subject` + body 解释 why），CI commitli
 
 **裁剪**：小项目可只保留 3–5 行 Control Map 和一段覆盖边界；可以裁行数，不能裁“重要目标必须有检测或人工确认路径”这个原则。
 
+### 实例化后的增量维护
+
+首次接入完成后，普通 Harness 变更不应重跑完整实例化。维护只沿受影响的闭环传播：修改 Redline / Gate、Guide、Sensor、SPEC Behaviour 或 AI-facing 入口时，同步它的唯一事实源、必要引用与配套控制，并复验受影响的 Sensor；Gate 变更还要补一次负向校准。具体影响矩阵见 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 的“已接入项目维护口径”。
+
+普通业务改动、单次 Sensor 触发后只修正当前任务的业务实现、只读审计，不自动进入这条维护路径；修改 Sensor 本身仍需按影响维护。只有重复失败达到 Steering 触发条件，才考虑升级 Harness 本身。
+
 ---
 
 ## 怎么裁剪：按项目规模

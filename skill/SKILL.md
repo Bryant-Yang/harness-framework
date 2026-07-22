@@ -1,6 +1,6 @@
 ---
 name: harness-framework
-description: Use when 给新项目铺设、或给已有代码库接入 AI agent 工程契约（AGENTS.md / 红线 redline / 提交规范），让 Claude Code、Codex、Cursor、Gemini 等 agent 进场即知项目边界、不可碰的红线、产出落点与提交前自查，而不必每个会话重新解释。触发场景：新项目脚手架、给项目立规矩、agent 反复踩同样的坑、每次会话都重复解释项目、想接 AGENTS.md / 红线 enforcement / 文档即契约 / docs-as-contract。
+description: Use when 给新项目铺设、给已有代码库接入、或增量维护 AI agent 工程契约（AGENTS.md / 红线 redline / Harness Guide / Harness Sensor / 提交规范），让 Claude Code、Codex、Cursor、Gemini 等 agent 进场即知项目边界、不可碰的红线、产出落点与提交前自查，而不必每个会话重新解释。触发场景：新项目脚手架、给项目立规矩、维护或升级已有 Harness、修改 Harness 红线 / Harness Guide / Harness Sensor / agent 薄指针、agent 反复踩同样的坑、每次会话都重复解释项目、想接 AGENTS.md / 红线 enforcement / 文档即契约 / docs-as-contract。
 ---
 
 # Harness Framework —— 文档即契约协作脚手架
@@ -13,6 +13,7 @@ description: Use when 给新项目铺设、或给已有代码库接入 AI agent 
 ## 何时用
 - 新项目要一次性铺好 agent 契约骨架
 - 已有项目要接入 agent 约束但不破坏现状
+- 已接入项目要增量维护 Redline、Guide、Sensor、Behaviour 或 AI-facing 入口
 - 迁移/替换项目要禁止旧依赖复活
 - 症状：每个会话都在重复解释项目规矩；agent 反复踩同样的坑、长会话里「就这一次」破例
 
@@ -20,7 +21,7 @@ description: Use when 给新项目铺设、或给已有代码库接入 AI agent 
 - 一次性脚本、玩具项目（连 AGENTS.md 都不必要）
 - 已有成熟 agent 契约且无痛点
 
-## 核心流程（八步，**负向验证与 Behaviour evidence 不可跳**）
+## 首次接入流程（八步，**负向验证与 Behaviour evidence 不可跳**）
 先读 `reference/AI-ADOPTION-PROTOCOL.md` 拿完整口径与「给 AI 的固定指令」，按此执行：
 
 1. **Project Audit + Harnessability** — 识别技术栈、边界、测试隔离性、反馈质量、历史债与行为证据
@@ -32,14 +33,17 @@ description: Use when 给新项目铺设、或给已有代码库接入 AI agent 
 7. **Behaviour Evidence** — 在 SPEC 登记关键用例的独立证据与人类验收边界；Controls 只引用
 8. **Handoff + Steering** — 输出覆盖边界、控制、验证、baseline 与人工待决；达到重复失败触发条件时才输出 Steering
 
-## 新项目 vs 旧项目
+## 首次接入 vs 增量维护
 - **新项目**：直接铺完整骨架，红线先保守写 3-5 条。判据见 protocol「新项目执行口径」。
 - **旧项目**：**不覆盖**已有 README/AGENTS/CLAUDE/GEMINI/CI；冲突生成候选文件（如 `HARNESS.harness-new.md`）
   或最小合并；已存在违规列入历史债 baseline，**只拦新增**。判据见 protocol「旧项目执行口径」。
+- **已接入项目**：不重跑八步实例化。按 protocol「已接入项目维护口径」只同步受影响的事实源、引用与控制；Gate 变更做负向校准。普通业务改动不触发 Harness 维护。
 
 ## 多工具入口（机制 0）
 `AGENTS.md` 是唯一真契约。对不原生读它的工具放**薄指针**：Claude Code → `CLAUDE.md`、
 Gemini CLI / Antigravity → `GEMINI.md`，内容只有一行 `@AGENTS.md` 导入。**指针只指，不写规则**。
+
+项目实际存在 Agent 定义、Skills、编排器或工具专用规则时，才审计悬空引用、职责重叠与复用机会；不存在时跳过，不创建空台账。对具体且高影响的系统边界，Sensor 应验证 producer 实际输出 → contract / transform → consumer 预期，而不是分别证明两端存在。
 
 ## 资源
 - `templates/` — 拷到目标项目根目录，`*.template.md` 去掉 `.template`，替换 `<PROJECT>`/`<MISSION>` 等占位符

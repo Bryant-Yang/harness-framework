@@ -1,6 +1,6 @@
 # <PROJECT> 工程契约（HARNESS）
 
-> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.0.1（来源 commit：<sha>）
+> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.1.0（来源 commit：<sha>）
 >
 > 这是 **工程侧的契约文档**：北极星原则、技术栈、目录结构、红线、决策入口。配套 [`docs/SPEC.md`](docs/SPEC.md)（业务规格）与 [`docs/workflow.md`](docs/workflow.md)（按场景的工作流）。
 >

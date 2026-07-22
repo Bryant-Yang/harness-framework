@@ -1,6 +1,8 @@
 # Harness Engineering 上位模型
 
-> Harness Framework 2.0.1 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
+<!-- harness:boundary-sensor=producer-contract-consumer -->
+
+> Harness Framework 2.1.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
 > [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html)
 > 中提出的控制系统视角，落成一套轻量、可实例化的工程契约方法。
 >
@@ -76,6 +78,8 @@ Guide 预先引导
 
 把承重架构属性变成持续 fitness functions，例如模块边界、性能预算、可观察性和错误处理。ADR 解释“为什么”，Sensor 负责持续检查“是否仍成立”。
 
+关键边界不能只分别证明两端“存在”。边界 Sensor 应验证完整链路：**producer 实际输出 → contract / transform → consumer 真实预期**。优先使用 contract test、集成测试、schema 校验，或针对路由和状态转换的确定性检查；无法稳定形式化时，明确降级为 Inferential Review Criterion 或 Human Acceptance Decision。只有项目存在具体且高影响的边界时才实例化这类 Sensor，不扩成通用 QA 清单。
+
 ### Behaviour Harness
 
 当前最薄弱。Agent 解释需求、实现功能、再生成测试证明自己正确，不是独立证据。关键行为至少需要一种来源独立的验收依据：
@@ -130,6 +134,7 @@ Structure + Tech Stack + Guides + Sensors → Harness Template → Project Insta
 - Sensor 从不触发，既可能代表高质量，也可能代表检测失效；必须用负向探针校准。
 - 指标会产生 Goodhart 风险，门禁通过不等于系统更好。
 - 模板实例会与上游漂移，必须记录版本并走人工审查的升级协议。
+- 已接入项目修改 Harness 时按影响范围同步唯一事实源、引用与配套控制，并最小复验；不重跑完整实例化，也不触碰无关控制。
 - 高影响 harness 变更由 agent 提案、提供失败样例和影响面，由人批准。
 - Harness 的目标不是消灭人，而是把人的注意力留给业务意图、例外、风险和责任判断。
 

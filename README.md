@@ -1,4 +1,4 @@
-# Harness Framework 2.0.1 —— 「文档即契约」到「控制闭环」
+# Harness Framework 2.1.0 —— 「文档即契约」到「控制闭环」
 
 > 作者：Bryant Yang
 >
@@ -24,6 +24,8 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 ```
 
 完整概念与边界见 [`docs/HARNESS-ENGINEERING.md`](docs/HARNESS-ENGINEERING.md)。框架仍然是方法与契约库，不是重型 agent 编排平台。
+
+2.1 补充三项不增加日常负担的维护能力：已接入项目按变更影响做增量维护；仅在项目实际存在 Agent / Skill / 编排资产时审计悬空引用、职责重叠与复用机会；关键边界的 Sensor 同时验证 producer 实际输出、contract / transform 与 consumer 预期。它们不新增机制编号、目标项目文件、日常必做步骤或 CI 任务。
 
 11 个可复用机制（详见 [`METHODOLOGY.md`](METHODOLOGY.md)）：
 
@@ -71,7 +73,7 @@ harness_extract/
 ├── README.md                          # 本文：框架是什么 + 如何实例化
 ├── METHODOLOGY.md                     # 方法论：每个机制为什么存在、如何裁剪
 ├── docs/HARNESS-ENGINEERING.md        # Guides / Sensors / Steering 上位模型
-├── AI-ADOPTION-PROTOCOL.md            # AI 自动接入协议：新旧项目统一落地流程
+├── AI-ADOPTION-PROTOCOL.md            # AI 自动接入与增量维护协议
 ├── INSTANTIATION-CHECKLIST.md         # 复用到新工程的逐步检查清单
 ├── LICENSE                            # MIT
 ├── skill/SKILL.md                     # 把本框架封装成 agent 可发现的 skill（机制入口）
@@ -143,9 +145,9 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 >
 > 想看填好的成品长什么样？读 [`examples/node-orders-api/`](examples/node-orders-api/)（一个异构的 Node 后端样例）。
 
-## 如何让 AI 自动接入
+## 如何让 AI 自动接入或维护
 
-新旧项目都可以按 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 执行。核心流程固定为：
+新旧项目首次接入、已接入项目后续维护都按 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 执行。首次接入核心流程为：
 
 ```text
 发现事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement
@@ -153,6 +155,8 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 ```
 
 把协议里的「给 AI 的固定指令」交给 Codex / Claude Code / Gemini CLI 等 agent，即可让 AI 自动审计项目、填充模板、接红线守门并完成负向验证。
+
+已经完成实例化的项目不重跑整套接入流程。只有修改 Redline / Gate、Guide、Sensor、SPEC Behaviour 或 AI-facing 入口时，才按协议的维护矩阵同步唯一事实源、引用和配套控制，并复验受影响的 Sensor；普通业务改动不会额外触发 Harness 维护步骤。
 
 ## 作为 skill 安装（一键触发，免手动翻协议）
 
