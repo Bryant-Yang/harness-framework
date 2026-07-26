@@ -2,11 +2,14 @@
 
 <!-- harness:maintenance-routing=delta-impact -->
 <!-- harness:ai-assets-audit=conditional -->
+<!-- harness:context-routing=progressive-and-probed -->
+<!-- harness:experience-promotion=candidate-first -->
+<!-- harness:runner-consumption=optional -->
 
 > 作者：Bryant Yang
 >
 > 本文把 harness 的首次接入与后续维护固化成 AI 可执行协议。新旧项目首次接入时执行：
-> **审计事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement → 负向验证与自修 → 在 SPEC 补行为证据 → 按触发条件输出 Steering 与未决项**。已接入项目只按变更影响做增量维护。
+> **审计事实与 Harnessability → 冻结 Direction / Context Routing → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement → 负向验证与自修 → 在 SPEC 补行为证据 → 按触发条件输出 Experience Candidate 与未决项**。已接入项目只按变更影响做增量维护。
 
 ## 适用场景
 
@@ -26,16 +29,21 @@
 7. 约束分级：确定性 Gate、推理型 Review Criterion、人类 Acceptance Decision 不混用。
 8. 行为证据独立：当前实现 agent 自己生成的测试不能成为关键行为的唯一验收依据。
 9. 维护按影响传播：已接入项目不重跑完整实例化，只同步受影响的事实源、引用和控制，并做最小复验。
+10. 上下文渐进加载：稳定入口不变，按 always-on / task-loaded / phase-loaded 路由，并用 Routing Probe 检查漏载与冲突。
+11. 经验先候选后晋级：单次普通失败只修当前任务；重复至少两次或高严重度逃逸才建 Candidate，未经 Eval + Owner 不覆盖正式 Skill / 契约。
+12. Runner 只是可选消费者：仅在项目实际存在时补 Consumption Contract，不把本框架扩成运行时平台。
 
 ## 首次接入统一流水线
 
 ```text
-1. Project Audit + Harnessability
+1. Project Audit + Direction
    识别技术栈、目录结构、构建/测试/lint/CI、现有 agent 配置、类型反馈、模块边界、
    测试隔离性、运行日志和关键行为证据；若实际存在 Agent 定义、Skills、编排器或工具专用规则，
-   再核对声明与文件、悬空引用、职责重叠和复用机会。
+   再核对声明与文件、悬空引用、职责重叠和复用机会。在 HARNESS §0.0 记录当前基线、目标状态、
+   不变量 / 非目标、Closure Evidence 与 Change Authority。
 
-2. Harness Instantiation
+2. Context Routing + Harness Instantiation
+   定义 always-on / task-loaded / phase-loaded 与 Routing Probe；
    生成或合并 AGENTS.md、HARNESS.md、docs/workflow.md、docs/harness-controls.md、
    commit 规范和必要指针文件，并记录框架版本与本地差异。
 
@@ -56,8 +64,9 @@
 7. Behaviour Evidence
    在 SPEC 对关键用例登记独立证据、批准人和人工边界；Controls 只引用用例，不双写证据。
 
-8. Handoff + Steering
-   输出已接好的控制、红线、覆盖边界、历史债 baseline 和人工待决；只有同类失败至少两次或已有趋势证据时才输出 Steering。
+8. Handoff + Experience Promotion
+   输出已接好的控制、红线、覆盖边界、历史债 baseline 和人工待决；只有同类失败至少两次、
+   已有趋势证据或一次高严重度逃逸时才输出 Candidate。Candidate 必须分类、评测并由 Owner 批准后才能晋级。
 ```
 
 ## 现有 AI-facing 资产审计（条件式）
@@ -88,6 +97,7 @@
 - `AGENTS.md` 是唯一契约源。
 - `HARNESS.md §8` 每条红线都有守门命令。
 - `docs/harness-controls.md` 里的重要目标都有 Sensor 或明确的人类确认路径。
+- workflow 已区分 always-on / task-loaded / phase-loaded，Routing Probe 能发现漏载的 Owner Doc 或 Closure Evidence。
 - `bash scripts/check-redlines.sh` 能通过。
 - 负向违规探针能被拦住。
 
@@ -127,7 +137,7 @@ R1 被替换的旧依赖禁止任何形式复活
 
 ## 已接入项目维护口径
 
-仅当项目已经完成 Harness 实例化，且当前任务修改 Harness、控制、AI-facing 资产或框架版本时进入本节。普通业务改动、单次 Sensor 触发后只修正当前任务的业务实现、只读审计、尚未达到 Steering 条件的单次失败都不触发 Harness 维护；修改 Sensor 本身仍进入下表。
+仅当项目已经完成 Harness 实例化，且当前任务修改 Harness、控制、AI-facing 资产或框架版本时进入本节。普通业务改动、单次普通 Sensor 触发后只修正当前任务的业务实现、只读审计、尚未达到 Experience Promotion 条件的失败都不触发 Harness 维护；修改 Sensor 本身仍进入下表。
 
 | 变更对象 | 必须同步 | 最小复验 | 明确跳过 |
 | --- | --- | --- | --- |
@@ -136,6 +146,9 @@ R1 被替换的旧依赖禁止任何形式复活
 | Sensor / 非红线 Gate | 检查、review criterion 或人工协议的唯一事实源；Control；运行时机、失败反馈与修复方向 | 确定性项做正负验证；推理项保留证据；人工项确认验收责任 | 因为可机械执行就抬成 Redline，或为凑门禁而降低阈值 |
 | SPEC Behaviour / Evidence | `SPEC.md` 唯一事实源；相关数据契约、tests / fixtures；Control 锚点与人工边界 | 独立证据、验收责任和引用锚点仍成立 | 在 Controls 复制证据正文 |
 | AI-facing 入口 / Skill / Agent | 实际资产自身持有职责与触发条件；仅当项目级契约或路由受影响时同步 `AGENTS.md`；工具入口只保留引用 | 结构与引用检查 + 最小 smoke；工具入口保持薄指针 | 集中登记全部资产，或仅因 `AGENTS.md` 内容变化就向各指针复制规则 |
+| Context Routing | workflow / AGENTS 的层级、Owner Doc 优先级与 Probe；只同步受影响场景 | 场景命中 + 路径 / 边界 + Closure Evidence 路由 smoke | 全量加载所有文档或新建重型路由服务 |
+| Experience Candidate | Evidence Packet、分类、适用 / 不适用、触发与正反例、Owner、版本 / 回滚 | 原失败回放 + 反例 / 非适用例 + 路由 smoke + 独立评测 | 自动覆盖正式 Skill / Guide / Sensor / Gate |
+| Runner Consumption（仅存在时） | runner 输入 / 输出、权限、预算、人工批准、停止条件与 Closure Evidence | 最小执行 / 恢复 smoke + 外部副作用审计 | 为不存在的 runner 建空配置，或让 runner 拥有项目事实 / 弱化门禁 |
 
 框架上游升级继续使用 `docs/harness-controls.md` 中记录的版本、本地差异和人工审查策略；不另建维护日志。维护完成时只报告本次变更对象、同步面、最小复验和明确跳过的无关步骤。
 
@@ -161,6 +174,7 @@ R1 被替换的旧依赖禁止任何形式复活
    - 仅当实际存在时，审计 Agent 定义 / Skills / 编排器 / 工具专用规则，核对引用有效性、职责重叠与复用机会
    - 已存在的架构约束和常见风险
    - Harnessability：类型反馈、模块边界、测试隔离性、运行日志、关键行为证据
+   - 在 HARNESS §0.0 写清当前基线、目标状态、不变量 / 非目标、Closure Evidence 与 Change Authority
 
 2. 首次接入时从 harness templates 实例化；增量维护跳过本步：
    - AGENTS.md
@@ -170,6 +184,8 @@ R1 被替换的旧依赖禁止任何形式复活
    - docs/git-commit-conventions.md
    - 必要的 CLAUDE.md / GEMINI.md / .github/copilot-instructions.md / .cursor/rules 指针
    - scripts/check-redlines.sh
+   - 在 AGENTS / workflow 定义 always-on / task-loaded / phase-loaded；Routing Probe 检查场景、改动路径 / 边界和 Closure Evidence
+   - 在平台规则与用户当前指令之下，项目事实 / Owner Doc > Skills > memory / 建议性上下文，冲突时显式报告
 
 3. 建立 Control Map：
    - 每个重要目标最小登记 Guide、Sensor / 人工确认、失败处置和 Owner
@@ -208,7 +224,10 @@ R1 被替换的旧依赖禁止任何形式复活
    - 哪些规则还只是文档约束
    - 哪些历史债需要 baseline
    - 哪些地方需要人工拍板
-   - 仅当同类失败至少两次或已有趋势证据时，说明哪些问题进入 Steering Log
+   - 单次普通失败只修当前任务
+   - 仅当同类失败至少两次、已有趋势证据或一次高严重度逃逸时，输出 Evidence Packet 与分类后的 Candidate
+   - Candidate 只有通过原失败回放、反例 / 非适用例、路由 smoke 与 Owner 批准后，才可晋级正式 Skill / Guide / Sensor / Gate
+   - 仅当检测到 Codex Goal、Mission Driver 或其他 runner 时，补 Runner Consumption Contract；否则不建空配置
 ```
 
 ## AI 输出格式
@@ -240,8 +259,11 @@ Control Map：
 人工待决：
 - <需要项目负责人拍板的问题>
 
-Steering（仅达到触发条件时输出）：
-- <重复失败模式 / Harness 改动候选 / 复查时间>
+Experience Candidate（仅达到触发条件时输出）：
+- <Evidence / 严重度与重复次数 / 分类 / 适用与不适用 / Eval / Owner / 发布与回滚>
+
+Runner Consumption（仅实际存在 runner 时输出）：
+- <输入 / 输出 / 权限与批准 / 停止条件 / Closure Evidence / 副作用审计>
 ```
 
 ### 增量维护
@@ -253,7 +275,7 @@ Steering（仅达到触发条件时输出）：
 - <修改文件>
 
 维护范围：
-- 变更对象：<Redline / Guide / Sensor / Behaviour / AI-facing 资产>
+- 变更对象：<Redline / Guide / Sensor / Behaviour / AI-facing 资产 / Context Routing / Experience Candidate / Runner Consumption>
 - 同步面：<本次实际同步的事实源、引用与控制>
 - 最小复验：<实际执行的命令 / review 证据 / 人工确认>
 - 明确跳过：<未重跑的全量步骤与无关控制>

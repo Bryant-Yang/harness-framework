@@ -1,8 +1,11 @@
 # Harness Engineering 上位模型
 
 <!-- harness:boundary-sensor=producer-contract-consumer -->
+<!-- harness:context-routing=progressive-and-probed -->
+<!-- harness:experience-promotion=candidate-first -->
+<!-- harness:runner-consumption=optional -->
 
-> Harness Framework 2.1.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
+> Harness Framework 2.2.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
 > [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html)
 > 中提出的控制系统视角，落成一套轻量、可实例化的工程契约方法。
 >
@@ -28,15 +31,33 @@ Guide 预先引导
   → Sensor 检测偏差
   → Agent 自我修正
   → Sensor 再验证
-  → Human Steering 根据重复失败升级 Guide / Sensor
+  → 重复或高严重度逃逸形成 Candidate
+  → Eval + Owner 决定是否升级 Guide / Sensor / Skill / Gate
 ```
 
 - **Guides（feedforward）**：行动前提高首次做对的概率。
 - **Sensors（feedback）**：行动后提供可定位、可修复、可复验的信号。
 - **Self-correction**：当前变更内的修正循环。
-- **Human Steering**：同类失败至少出现两次或形成趋势证据后，持续校准整个 harness；单次失败只进入当前任务的 Self-correction。
+- **Experience Promotion**：同类失败至少出现两次，或一次高严重度逃逸后，才把证据分类为 Candidate；未经评测和 Owner 批准不改正式控制。
 
 只有 Guide，没有 Sensor，无法证明规则生效；只有 Sensor，没有 Guide，agent 会反复犯同一种错误。
+
+### 2.1 Direction Contract：先冻结“向哪里”
+
+控制闭环必须有明确方向，但不需要为此引入新的顶层文档。项目在 `HARNESS.md §0.0` 轻量记录：
+
+- 当前基线与目标状态；
+- 不变量和明确非目标；
+- 关闭证据引用；
+- 谁有权修改方向、接受风险或宣告完成。
+
+这让 Codex Goal、Mission Driver 或普通人工任务使用同一套“完成”语义：依据 Closure Evidence，而不是 executor 自报。
+
+### 2.2 Context Routing：只加载现在需要的
+
+稳定入口仍是 `AGENTS.md → workflow 场景`。上下文按 `always-on / task-loaded / phase-loaded` 分层，Routing Probe 检查场景、改动路径 / 边界和关闭证据是否都有对应 Owner Doc。在平台规则与用户当前指令之下，项目事实 / Owner Doc > Skills > memory / 建议性上下文。冲突必须显式暴露。
+
+这是文档路由契约，不要求另建检索服务、向量库或编排器。
 
 ## 3. 四个正交维度：审计视角，不是填表任务
 
@@ -137,5 +158,34 @@ Structure + Tech Stack + Guides + Sensors → Harness Template → Project Insta
 - 已接入项目修改 Harness 时按影响范围同步唯一事实源、引用与配套控制，并最小复验；不重跑完整实例化，也不触碰无关控制。
 - 高影响 harness 变更由 agent 提案、提供失败样例和影响面，由人批准。
 - Harness 的目标不是消灭人，而是把人的注意力留给业务意图、例外、风险和责任判断。
+
+## 9. Experience Promotion：Harness 如何安全地长出 Skill
+
+真正的自生长不是自动堆 Skill，而是把失败证据经过分类、评测和批准后晋级：
+
+```text
+失败 / 人工纠正 / 审计漏检
+→ 修复当前任务
+→ 重复或高严重度逃逸
+→ Evidence Packet
+→ 分类与 Candidate
+→ 原失败回放、反例 / 非适用例、路由 smoke
+→ Owner 批准
+→ 发布、观察、回滚
+```
+
+项目事实进入 SPEC / ADR，复用工作方法才进入 Candidate Skill；机械可拒模式进入 Gate，语义漏检进入 Sensor，重试 / 状态 / 幂等问题进入普通代码。Candidate 至少携带来源证据、适用 / 不适用范围、触发条件、正反例、目标输出、Owner、版本和回滚条件。
+
+Agent 可以起草 Candidate，不能自动覆盖正式 Skill、Guide、Sensor 或项目契约。单次普通失败继续只做 Self-correction，不制造可见流程噪声。
+
+## 10. Runner 是消费者，不是 Harness 本体
+
+只有检测到 Codex Goal、Mission Driver 等 runner 时，项目才补可选 Runner Consumption Contract：
+
+- 输入目标、范围、非目标、Guides、Sensors、关闭证据、权限、预算与停止 / 升级条件；
+- 输出状态、证据、失败 Sensor、下一动作、外部副作用与审计记录；
+- runner 不拥有项目事实，不得静默弱化控制，也不能把 fresh session 或 verifier 自报冒充来源独立验收。
+
+本框架不实现 runner、Flow DSL、任务恢复或模型编排；它只规定 runner 进入项目后必须消费和返回什么。
 
 落地载体见 [`../templates/docs/harness-controls.template.md`](../templates/docs/harness-controls.template.md)。

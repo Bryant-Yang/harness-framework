@@ -1,4 +1,4 @@
-# Harness Framework 2.1.0 —— 「文档即契约」到「控制闭环」
+# Harness Framework 2.2.0 —— 「文档即契约」到「可学习控制闭环」
 
 > 作者：Bryant Yang
 >
@@ -13,19 +13,28 @@
 
 它不是代码库，而是一组**文档模板 + 协作机制**。核心思想：
 
-> **把项目的「钢印级约束」固化成可索引的 Guides，把关键风险编译成可执行的 Sensors，再用 Self-correction 与 Human Steering 形成闭环。**
+> **把项目方向和「钢印级约束」固化成可路由的 Guides，把关键风险编译成可执行的 Sensors，再用 Self-correction 与 Candidate-first Experience Promotion 形成可学习闭环。**
 
 2.0 在原有 docs-as-contract 与红线 enforcement 之上补齐了 Harness Engineering 的上位模型：
 
 ```text
 Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
        ↑                                      │
-       └──────── Human Steering：重复失败升级 Harness ────────┘
+       └── Evidence → Candidate → Eval → Owner：稳定经验晋级 ─┘
 ```
 
 完整概念与边界见 [`docs/HARNESS-ENGINEERING.md`](docs/HARNESS-ENGINEERING.md)。框架仍然是方法与契约库，不是重型 agent 编排平台。
 
 2.1 补充三项不增加日常负担的维护能力：已接入项目按变更影响做增量维护；仅在项目实际存在 Agent / Skill / 编排资产时审计悬空引用、职责重叠与复用机会；关键边界的 Sensor 同时验证 producer 实际输出、contract / transform 与 consumer 预期。它们不新增机制编号、目标项目文件、日常必做步骤或 CI 任务。
+
+2.2 把这条闭环向前后各延伸一步，但**不改变使用入口**：
+
+- 开工时按 `always-on / task-loaded / phase-loaded` 路由上下文，并用 Routing Probe 检查有没有漏载关键事实；
+- 在现有 `HARNESS.md §0.0` 内明确 Direction Contract：当前基线、目标状态、不变量 / 非目标、关闭证据与变更权限；
+- 重复失败或高严重度逃逸先生成带证据的 Candidate，经反例评测和 Owner 批准后，才晋级为 Guide、Sensor、Skill 或 Gate；
+- 项目实际存在 Codex Goal、Mission Driver 等 runner 时，才补一段可选 Consumption Contract；Harness 仍不承担运行时编排。
+
+已有 2.1 项目可增量吸收；没有新命令、日常清单、强制顶层文件或空台账。正常任务仍然从 `AGENTS.md → workflow 场景` 进入，只有出现高价值候选、上下文冲突或高风险边界时才增加可见反馈。
 
 11 个可复用机制（详见 [`METHODOLOGY.md`](METHODOLOGY.md)）：
 
@@ -33,16 +42,16 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 | --- | --- | --- | --- |
 | 0 | **多工具入口指针** | `CLAUDE.md` / `GEMINI.md` / `.github/` / `.cursor/` | 每个 agent 工具找的文件名不同，各放一个薄指针指回 AGENTS.md |
 | 1 | **唯一契约源** | `AGENTS.template.md` | 真正的契约只此一份，所有指针都引到它，杜绝多份漂移 |
-| 2 | **工程契约（北极星 + 红线）** | `HARNESS.template.md` | 北极星原则 + 技术栈基线 + 目录约束 + **红线 N 条**（驳回级硬约束） |
+| 2 | **工程契约（方向 + 北极星 + 红线）** | `HARNESS.template.md` | 用轻量 Direction Contract 冻结目标与关闭证据，再声明北极星、技术栈、目录和驳回级红线 |
 | 2.5 | **红线守门（牙齿）** | `enforcement/` | 把红线编译成 grep / lint / commitlint / CI 闸门——违反就合不进。**没这层红线是装饰** |
 | 3 | **业务规格总纲** | `docs/SPEC.template.md` | 用例索引 + 用例模板 + 阶段一览，业务/开发的共同语言 |
-| 4 | **场景化工作流表** | `docs/workflow.template.md` | 「我属于哪种任务」→ 先读哪份 / 守哪条红线 / 产出在哪 / DoD 是什么 |
+| 4 | **场景化工作流 + 上下文路由** | `docs/workflow.template.md` | 「我属于哪种任务」→ 只装入该任务 / 阶段所需事实，并用 Routing Probe 防漏载 |
 | 5 | **ADR 决策记录** | `docs/adr/` | 工程「为什么这么做」的不可变档案；改契约先开 ADR |
 | 6 | **业务决议卡** | `docs/decisions/` | 业务「系统该做什么」的待决问题，⏳ 状态可阻断里程碑 |
 | 7 | **提交规范** | `docs/git-commit-conventions.template.md` | Conventional Commits，CI commitlint 强制 |
 | 8 | **文档地图（按角色）** | `PROJECT-README.template.md` | 不同角色/任务的文档入口表 |
 | 9 | **提交前自查清单** | 内嵌于 workflow / AGENTS | 全部问题为「是」才能 request review |
-| 10 | **控制台账 + Steering Loop** | `docs/harness-controls.template.md` | 最小登记 Guide、Sensor、处置与 Owner；只对疑难控制做分类审计 |
+| 10 | **控制台账 + Experience Promotion** | `docs/harness-controls.template.md` | 最小登记控制；稳定经验先成为 Candidate，经评测与批准后再晋级，runner 契约按存在性启用 |
 
 ---
 
@@ -72,14 +81,15 @@ harness_extract/
 ├── VERSION                            # 框架版本
 ├── README.md                          # 本文：框架是什么 + 如何实例化
 ├── METHODOLOGY.md                     # 方法论：每个机制为什么存在、如何裁剪
-├── docs/HARNESS-ENGINEERING.md        # Guides / Sensors / Steering 上位模型
+├── docs/HARNESS-ENGINEERING.md        # Direction / Context / Guides / Sensors / Experience 上位模型
+├── docs/MISSION-DRIVER-AGE-COMMUNICATION-KB.md # 2.2 外部研究与证据边界（非规范）
 ├── AI-ADOPTION-PROTOCOL.md            # AI 自动接入与增量维护协议
 ├── INSTANTIATION-CHECKLIST.md         # 复用到新工程的逐步检查清单
 ├── LICENSE                            # MIT
-├── skill/SKILL.md                     # 把本框架封装成 agent 可发现的 skill（机制入口）
+├── SKILL.md                           # 标准 skill 根入口；npx 安装时携带本仓完整资源
 ├── .github/workflows/check-framework.yml # 本仓最小自证 CI，只运行框架自检
 ├── scripts/check-framework.sh         # 结构、链接、baseline、组装与负向探针自证
-├── scripts/sync-skill.sh             # 把 skill 安装到 Claude Code / Codex 个人技能目录
+├── scripts/sync-skill.sh             # 仓库维护者本地组装、同步 skill 的兼容脚本
 └── templates/                         # 拷过去即可（带 <占位符> 的填空，指针文件直接用）
     ├── AGENTS.template.md              # ← 唯一真契约（机制 1）
     ├── CLAUDE.md                       # ┐
@@ -99,7 +109,7 @@ harness_extract/
     └── docs/
         ├── SPEC.template.md
         ├── workflow.template.md
-        ├── harness-controls.template.md # 控制台账 + SPEC evidence 引用 + 事件型 Steering
+        ├── harness-controls.template.md # 控制台账 + SPEC 引用 + Candidate-first 经验晋级
         ├── git-commit-conventions.template.md
         ├── roadmap.template.md           # 支撑文档：里程碑 + DoD
         ├── deps-and-configs.template.md  # 支撑文档：依赖白/黑名单 + 配置
@@ -116,7 +126,7 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 ├── HARNESS-redlines.md                #   §8 三列表填好版
 ├── workflow-scenes.md                 #   场景表填好版
 ├── SPEC.md                            #   Behaviour Evidence 唯一事实源节选
-├── harness-controls.md                #   Control Map、SPEC 引用与事件型 Steering
+├── harness-controls.md                #   Control Map、SPEC 引用与 Experience Promotion
 └── scripts/check-redlines.sh          #   可运行、已验证能拦违规
 ```
 
@@ -150,13 +160,14 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 新旧项目首次接入、已接入项目后续维护都按 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 执行。首次接入核心流程为：
 
 ```text
-发现事实与 Harnessability → 实例化文档 → 建 Control Map → 生成红线 → 接 enforcement
-→ 负向验证与自修 → 在 SPEC 补行为证据 → 按触发条件输出 Steering / 未决项
+发现事实与 Harnessability → 冻结方向 / 路由上下文 → 实例化文档 → 建 Control Map
+→ 生成红线并接 enforcement → 负向验证与自修 → 在 SPEC 补行为证据
+→ 按触发条件输出 Experience Candidate / 未决项
 ```
 
 把协议里的「给 AI 的固定指令」交给 Codex / Claude Code / Gemini CLI 等 agent，即可让 AI 自动审计项目、填充模板、接红线守门并完成负向验证。
 
-已经完成实例化的项目不重跑整套接入流程。只有修改 Redline / Gate、Guide、Sensor、SPEC Behaviour 或 AI-facing 入口时，才按协议的维护矩阵同步唯一事实源、引用和配套控制，并复验受影响的 Sensor；普通业务改动不会额外触发 Harness 维护步骤。
+已经完成实例化的项目不重跑整套接入流程。修改控制、Context Routing、Experience Candidate、Runner Consumption 或 AI-facing 资产时，按协议的[维护矩阵](AI-ADOPTION-PROTOCOL.md#已接入项目维护口径)只同步受影响的事实源、引用和配套控制；普通业务改动不会额外触发 Harness 维护步骤。
 
 ## 作为 skill 安装（一键触发，免手动翻协议）
 
@@ -164,20 +175,26 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 在**任意新旧项目**里被自动发现并触发——不必每次手动把协议贴给 agent。
 
 ```bash
-bash scripts/sync-skill.sh
+npx skills add Bryant-Yang/harness-framework \
+  --skill harness-framework \
+  -g \
+  -a codex \
+  -a claude-code \
+  -y
 ```
 
-脚本以**本仓库为唯一源**，把 `SKILL.md + templates/ + examples/ + reference/`（四份方法文档）
-组装并安装到：
+该命令直接从 GitHub 安装，并把同一份完整 skill（入口、模板、样例和方法文档）链接到 Codex 与 Claude Code 的全局技能目录。
+安装前想先确认仓库中可用的 skill：
 
-- `~/.claude/skills/harness-framework/`（Claude Code）
-- `~/.agents/skills/harness-framework/`（Codex）
+```bash
+npx skills add Bryant-Yang/harness-framework --list
+```
 
-> 可用环境变量改安装根路径：`CLAUDE_SKILLS_DIR` / `CODEX_SKILLS_DIR`。
-> 脚本只清理 `harness-framework` 自己的目录，不动同级其它 skill。
+以后更新到仓库最新版：
 
-安装后：
+```bash
+npx skills update harness-framework -g -y
+```
 
 - **Claude Code**：在目标项目里说「用 harness 给这个项目立规矩」，或直接 `/harness-framework`。
 - **Codex**：同名 skill 已就位，触发方式一致。
-- **改了仓库里的源文件后**：重跑 `bash scripts/sync-skill.sh` 即同步（缓解自包含的两份漂移）。

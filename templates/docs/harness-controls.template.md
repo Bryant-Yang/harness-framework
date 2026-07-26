@@ -2,9 +2,12 @@
 
 <!-- harness:control-map=minimum -->
 <!-- harness:behaviour-evidence=spec-reference-only -->
-<!-- harness:steering-trigger=min-occurrences-2 -->
+<!-- harness:experience-trigger=repeat-2-or-high-severity-1 -->
+<!-- harness:context-routing=progressive-and-probed -->
+<!-- harness:experience-promotion=candidate-first -->
+<!-- harness:runner-consumption=optional -->
 
-> Framework version：2.1.0　项目实例版本：<YYYY-MM-DD / commit>
+> Framework version：2.2.0　项目实例版本：<YYYY-MM-DD / commit>
 >
 > 本文把重要目标映射为 Guide、Sensor / 人工确认、失败处置和责任人。它不替代 `HARNESS.md`、`SPEC.md`
 > 或具体工具配置，只负责证明控制闭环是否完整。
@@ -53,13 +56,23 @@
 | 集成后 | 较昂贵 | <全量测试 / mutation / 架构检查> | 维护队列 | 建单或回滚 |
 | 持续健康 / 运行时 | 周期性 | <漂移 / SLO / 日志异常> | Owner | 带证据提出改进，不直接改生产 |
 
-## 6. Steering Log
+## 6. Context Routing Sensor
 
-> 同类失败至少出现两次，或已有趋势证据时才建立记录；初始化时本节只保留触发规则，不创建表格。触发后再记录：日期、重复失败证据、根因分类、Harness 改动、负向验证、Owner 与复查日。
+> 不建新路由器。现有 `AGENTS.md → workflow` 入口至少探测：场景命中、改动路径 / 边界的 Owner Doc、Closure Evidence 锚点。缺失或来源冲突即报告；在平台规则与用户当前指令之下，Owner Doc > Skills > memory / 建议性上下文。
 
-## 7. Baseline 与模板升级
+## 7. Experience Promotion
+
+> 同类失败至少两次，或一次高严重度逃逸时才建立记录；初始化时只保留触发规则，不创建空表。先修当前任务，再形成 Evidence Packet。触发后记录：纠正证据 / diff、严重度与重复次数、分类、Candidate 目标、适用 / 不适用范围、触发与正反例、原失败回放、反例 / 路由 smoke、Owner、发布 / 回滚与复查日。
+>
+> 分类落点：项目事实 → SPEC / ADR；复用方法 → Candidate Skill；机械可拒模式 → Gate；语义漏检 → Sensor；重试 / 状态 / 幂等 → 普通代码；一次性信息 → task note / memory。Agent 不得自动覆盖正式 Skill 或契约。
+
+## 8. Runner Consumption Contract（仅检测到 runner 时实例化）
+
+> 没有 Codex Goal、Mission Driver 或外部 runner 时删除本节，不创建空配置。存在时记录：目标 / 范围 / 非目标、Guides、Sensors、Closure Evidence、权限 / 人工批准、预算与停止条件；runner 返回状态、证据、失败 Sensor、下一动作、外部副作用与审计记录。runner 不拥有项目事实，不得弱化门禁。
+
+## 9. Baseline 与模板升级
 
 - **Legacy baseline**：<基线文件 / 生成命令 / 只拦新增的比较命令>。参考形态：`{ rg -n '<模式>' src || true; } | sed -E 's/^([^:]+):[0-9]+:/\1:/' | sort > docs/baselines/R1.txt` 生成去行号基线；CI 用同一命令生成当前命中，再执行 `new_hits="$(comm -13 <baseline> <current>)"; [ -z "$new_hits" ] || { printf '%s\n' "$new_hits"; exit 1; }`。`comm` 自身不会因有输出而失败，所以必须显式判断；`|| true` 允许零命中，去掉行号可避免无关代码移动制造假新增。
-- **模板来源**：Harness Framework `2.1.0`，来源 commit `<sha>`。
+- **模板来源**：Harness Framework `2.2.0`，来源 commit `<sha>`。
 - **本地差异**：<哪些是项目事实，升级时不得自动覆盖>。
 - **升级策略**：先看上游 diff，区分 bug fix / optional control / breaking policy，再人工合并并重跑负向验证。

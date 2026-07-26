@@ -2,7 +2,10 @@
 
 <!-- harness:control-map=minimum -->
 <!-- harness:behaviour-evidence=spec-reference-only -->
-<!-- harness:steering-trigger=min-occurrences-2 -->
+<!-- harness:experience-trigger=repeat-2-or-high-severity-1 -->
+<!-- harness:context-routing=progressive-and-probed -->
+<!-- harness:experience-promotion=candidate-first -->
+<!-- harness:runner-consumption=optional -->
 
 > 展示同一个目标如何同时拥有 Guide、Sensor / 人工确认、失败处置和责任边界。
 
@@ -41,10 +44,18 @@ new_hits="$(comm -13 docs/baselines/R2-legacy-monolith.txt /tmp/R2-current.txt)"
 [ -z "$new_hits" ] || { printf 'R2 新增旧单体引用：\n%s\n' "$new_hits"; exit 1; }
 ```
 
-## Steering Log
+## Context Routing Sensor
 
-> 不在实例化时填写空记录；以下条目由两次同类失败触发。
+`AGENTS.md → workflow-scenes.md` 必须命中一个场景，并能找到目标层契约与 `SPEC.md` 关闭证据。若任务只改依赖，不把整份 SPEC 和全部 ADR 装入上下文。
 
-| 日期 | 重复失败模式与证据 | 根因分类 | Harness 改动 | 负向验证 | Owner / 复查日 |
+## Experience Promotion
+
+> 不在实例化时填写空记录；以下 Candidate 由两次同类失败触发，尚未批准前不改正式 Skill。
+
+| 日期 | Evidence / 触发 | 分类与 Candidate | 适用 / 不适用 | Eval | Owner / 发布与回滚 |
 | --- | --- | --- | --- | --- | --- |
-| 2026-06-06 | 两次在 route 中拼 SQL | Guide 有、Sensor 缺 | 新增 R6 grep，并把报错指向 repository 层 | 在 `src/routes` 放 `SELECT` 探针，脚本必须失败 | Tech Lead / 2026-07-06 |
+| 2026-06-06 | 两次在 route 中拼 SQL；关联 diff #118 / #126 | 可机械拒绝模式 → Candidate R6 Gate | 适用 `src/routes/**`；不适用 repository migration | 原失败回放失败、repository 反例通过、场景路由命中 | Tech Lead；批准后发布，误报则回滚规则 |
+
+## Runner Consumption Contract
+
+本样例没有 Codex Goal、Mission Driver 或外部 runner，因此不创建 runner 配置或空表。

@@ -18,16 +18,21 @@
 
 2.0 在这三个判据之上增加第四个：
 
-- **可闭环**：重要目标在行动前有 Guide，行动后有 Sensor；反馈能让 agent 自修，重复失败能进入 Human Steering。
+- **可闭环**：重要目标在行动前有 Guide，行动后有 Sensor；反馈能让 agent 自修，重复失败或高严重度逃逸能进入 Experience Promotion，由 Owner 决定是否晋级。
 
-## 上位模型：Guides + Sensors + Steering
+2.2 再补两个不增加日常步骤的判据：
+
+- **可路由**：上下文按 always-on / task-loaded / phase-loaded 分层，任务入口能证明关键事实没有漏载；
+- **可学习**：失败先修当前任务，稳定经验先成为可评测 Candidate，未经 Owner 批准不自动改写正式 Skill 或契约。
+
+## 上位模型：Direction + Context + Guides + Sensors + Experience
 
 Harness Framework 建设的是 coding agent 的**用户侧 outer harness**，不是模型或 agent 产品内部的 system prompt、检索与编排。单个 `AGENTS.md`、Skill、lint 或 CI 都只是控制元件，完整 Harness 必须形成闭环：
 
 ```text
 Guide → Agent 变更 → Sensor → Self-correction → 再验证
   ↑                                             │
-  └──── Human Steering：观察重复失败并升级控制 ─────┘
+  └── Evidence → Candidate → Eval → Owner → 升级控制 ─┘
 ```
 
 四个维度用于审计 Harness 的覆盖与错配，不要求每条控制填写完整矩阵：
@@ -66,9 +71,11 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 
 ---
 
-## 机制 2 —— 工程契约：北极星 + 红线
+## 机制 2 —— 工程契约：方向 + 北极星 + 红线
 
-`HARNESS.md` 是写代码、改架构、合 PR 的钢印。它有两个不可替代的部分：
+`HARNESS.md` 是写代码、改架构、合 PR 的钢印。它有三个不可替代的部分：
+
+**Direction Contract**：在现有 §0.0 内回答当前基线、目标状态、不变量 / 非目标、关闭证据引用和谁有权改方向。它不是新增计划文档，也不要求引入 Attractor 术语；只是避免“任务完成”退化为 executor 自报。
 
 **北极星原则**（5–7 条）：项目级价值排序。例如「单一来源」「边界先行」「可测胜过可看」「反 God-Class」。当两个做法冲突时，用北极星裁决，而不是各凭口味。
 
@@ -77,7 +84,7 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 > 红线的黄金标准：**能写成一条 grep 命令**。
 > 写不成 grep 的「红线」往往是软约束，应该降级到北极星或普通规范。
 
-**裁剪**：北极星必留（哪怕只有 3 条）。红线按项目实情，宁少勿滥——10 条真红线 > 30 条没人查的「红线」。
+**裁剪**：Direction Contract 与北极星必留，但小项目各写一两行即可。红线按项目实情，宁少勿滥——10 条真红线 > 30 条没人查的「红线」。
 
 ### 机制 2.5 —— 红线的牙齿（enforcement，决定 harness 有效还是摆设）
 
@@ -126,7 +133,7 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 
 ---
 
-## 机制 4 —— 场景化工作流表（workflow）★ 框架的核心齿轮
+## 机制 4 —— 场景化工作流表 + Context Routing ★ 框架的核心齿轮
 
 **问题**：契约写得再全，agent 不知道「我这个任务该看哪几页」，要么全读（烧上下文）要么瞎猜。
 
@@ -134,9 +141,15 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 
 | 场景 | 先读哪份 | 必守红线 | 产出落在哪 | DoD |
 
-agent 进场第一动作就是「在这张表里定位我属于哪一行」。配套的「**按需载入上下文表**」进一步告诉它：这个会话只载哪几份文档，省主上下文。
+agent 进场第一动作就是「在这张表里定位我属于哪一行」。配套的 Context Routing Contract 把上下文分成三层：
 
-**裁剪**：不可裁。这是把「一堆契约文档」变成「可操作流程」的关键转换器。场景数量按项目调（dw_gis3d 用了 8 种）。
+- **always-on**：稳定入口、当前方向、全局红线；
+- **task-loaded**：命中场景后才加载的 SPEC、模块契约和相关 ADR；
+- **phase-loaded**：只在 commit、release、迁移或外部副作用阶段加载的规范与批准条件。
+
+路由本身也要可验证。Routing Probe 至少检查：场景是否命中、任务涉及的路径 / 边界是否有 Owner Doc、关闭证据锚点是否可达。在平台规则与用户当前指令之下，项目事实 / Owner Doc > Skills > memory / 建议性上下文。若来源冲突，停止该分支并暴露冲突，不让 agent 平均融合。
+
+**裁剪**：不可裁。这是把「一堆契约文档」变成「可操作流程」的关键转换器。小项目可以只有三行场景和一句 Probe，不需要额外路由器或运行时。
 
 ---
 
@@ -194,16 +207,42 @@ Conventional Commits（`type(scope): subject` + body 解释 why），CI commitli
 
 ---
 
-## 机制 10 —— Control Map + Steering Loop
+## 机制 10 —— Control Map + Experience Promotion
 
-**问题**：原有红线三列表能证明硬门禁有牙齿，但仍回答不了三件事：软约束由谁 review、关键行为靠什么独立证据验收、同类错误重复发生后谁升级 Harness。
+**问题**：原有红线三列表能证明硬门禁有牙齿，但仍回答不了四件事：软约束由谁 review、关键行为靠什么独立证据验收、同类错误重复发生后谁升级 Harness、稳定工程经验如何长成 Skill 而不堆积噪声。
 
 **做法**：实例化 [`templates/docs/harness-controls.template.md`](templates/docs/harness-controls.template.md)，维护三组轻量记录和一组引用：
 
 - **覆盖边界**：Maintainability、Architecture Fitness、Behaviour 各自覆盖到哪里，明确不保证什么。
 - **Control Map**：最小只填目标 → Guide → Sensor / 人工确认 → 失败处置 → Owner；类型、目标类别和生命周期仅在审计发现歧义时追加。
 - **Behaviour Evidence 引用**：证据唯一写在 `SPEC.md`，Controls 只保存用例锚点与相关 Control，避免双写。
-- **Steering Log**：只有同类失败至少出现两次或形成趋势证据后才记录；初始化时不建空台账。
+- **Experience Promotion**：同类失败至少两次，或一次高严重度逃逸，才创建 Evidence Packet 与 Candidate；初始化时不建空台账。
+
+Experience Promotion Loop 是：
+
+```text
+失败 / 人工纠正 / 审计漏检
+→ 修复当前任务
+→ 重复或高严重度逃逸
+→ Evidence Packet
+→ 分类并创建 Candidate
+→ 原失败回放 + 反例 / 非适用例 + 路由 smoke
+→ Owner 批准
+→ 发布、观察、必要时回滚
+```
+
+分类决定经验落点，避免所有问题都长成 Skill：
+
+| 经验性质 | 正式落点 |
+| --- | --- |
+| 项目事实 / 业务决定 | SPEC、ADR 或对应 Owner Doc |
+| 跨任务可复用的工作方法 | Candidate Skill |
+| 可稳定机械拒绝的模式 | Redline / Gate |
+| 语义审计漏检 | Sensor / review rubric |
+| 重试、状态、幂等、确定性转换 | 普通代码 |
+| 一次性上下文 | task note / memory，不晋级 |
+
+Candidate 必须记录纠正证据或 diff、适用与不适用范围、触发条件、正反例、目标输出、Owner、版本和回滚条件。Agent 可以生成 Candidate，**不得自动覆盖正式 Skill、Guide、Sensor 或项目契约**。
 
 约束分三级，不把所有重要事情都硬塞进 grep：
 
@@ -217,7 +256,17 @@ Conventional Commits（`type(scope): subject` + body 解释 why），CI commitli
 
 首次接入完成后，普通 Harness 变更不应重跑完整实例化。维护只沿受影响的闭环传播：修改 Redline / Gate、Guide、Sensor、SPEC Behaviour 或 AI-facing 入口时，同步它的唯一事实源、必要引用与配套控制，并复验受影响的 Sensor；Gate 变更还要补一次负向校准。具体影响矩阵见 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 的“已接入项目维护口径”。
 
-普通业务改动、单次 Sensor 触发后只修正当前任务的业务实现、只读审计，不自动进入这条维护路径；修改 Sensor 本身仍需按影响维护。只有重复失败达到 Steering 触发条件，才考虑升级 Harness 本身。
+普通业务改动、单次普通 Sensor 触发后只修正当前任务的业务实现、只读审计，不自动进入这条维护路径；修改 Sensor 本身仍需按影响维护。重复失败或高严重度逃逸才进入 Candidate-first 晋级。
+
+### 可选 Runner Consumption Contract
+
+只有项目实际存在 Codex Goal、Mission Driver 或其他长期 runner 时，才在 controls 中补一段消费契约，不创建新的强制顶层文件：
+
+- 输入：目标 / 范围 / 非目标、Guides、Sensors、关闭证据、预算、权限、人工批准和停止 / 升级条件；
+- 输出：当前状态、证据、失败 Sensor、下一动作、外部副作用与审计记录；
+- 边界：runner 不拥有项目事实，不得静默降低控制，不能以 executor 自报替代关闭证据。
+
+Harness Framework 只定义该边界，不实现 flow DSL、恢复引擎或任务编排平台。
 
 ---
 

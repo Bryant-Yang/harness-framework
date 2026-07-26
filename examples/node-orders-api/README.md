@@ -31,4 +31,4 @@
 dw_gis3d 守「禁止 `import 'cesium'`/`ht.*`」，这个样例守「禁止 `import 'prisma'` 进 domain / 禁止 `@acme/monolith` 复活」。
 **机制完全相同，红线内容不同**——这正是框架可复用的证明。
 
-`harness-controls.md` 再向上补一层：它说明这些闸门保护什么目标、行动前读什么 Guide、失败后如何处置、谁负责验收，并只引用 `SPEC.md` 的 Behaviour Evidence；同类失败达到触发条件后才进入 Steering。
+`harness-controls.md` 再向上补一层：它说明这些闸门保护什么目标、行动前读什么 Guide、失败后如何处置、谁负责验收，并只引用 `SPEC.md` 的 Behaviour Evidence；上下文按场景加载，重复失败或高严重度逃逸先形成 Candidate，经回放、反例与 Owner 批准后才晋级。

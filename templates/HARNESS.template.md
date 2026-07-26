@@ -1,6 +1,6 @@
 # <PROJECT> 工程契约（HARNESS）
 
-> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.1.0（来源 commit：<sha>）
+> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.2.0（来源 commit：<sha>）
 >
 > 这是 **工程侧的契约文档**：北极星原则、技术栈、目录结构、红线、决策入口。配套 [`docs/SPEC.md`](docs/SPEC.md)（业务规格）与 [`docs/workflow.md`](docs/workflow.md)（按场景的工作流）。
 >
@@ -21,7 +21,7 @@
 | 看里程碑 / DoD | [`docs/roadmap.md`](docs/roadmap.md) |
 | 起决策 | [`docs/adr/README.md`](docs/adr/README.md) |
 | 业务决议 | [`docs/decisions/README.md`](docs/decisions/README.md) |
-| 看 Guide / Sensor / Steering 闭环 | [`docs/harness-controls.md`](docs/harness-controls.md) |
+| 看 Guide / Sensor / Experience Promotion 闭环 | [`docs/harness-controls.md`](docs/harness-controls.md) |
 
 ---
 
@@ -32,6 +32,16 @@
 这条使命在任何阶段优先级 > 单个新功能优先级。
 
 > 示例（dw_gis3d）：使命是彻底替代 HT 商业库——能力对等 + 接口透明 + 依赖卸载，终态组织内不再有任何 HT 运行时与 license 占用。
+
+### Direction Contract
+
+> 保持短小；引用已有 SPEC / roadmap / ADR / Sensor，不在这里复制计划。普通任务仍按 `docs/workflow.md` 进入。
+
+- **当前基线**：<现有能力、历史债 baseline 或来源 commit>。
+- **目标状态**：<可以被外部证据验收的终态>。
+- **不变量 / 非目标**：<绝不能退化什么；本阶段明确不做什么>。
+- **Closure Evidence**：<SPEC 用例 / 测试 / 外部 fixture / 人工签收锚点>。
+- **Change Authority**：<谁可改方向、接受例外或宣告完成>。
 
 ## 0. 北极星原则
 
@@ -174,7 +184,7 @@ redlines → typecheck → lint → test → build
 - 三类目标的覆盖边界与明确不保证项；
 - 重要目标的 Guide、Sensor / 人工确认、失败处置和 Owner；疑难项才追加类型与生命周期；
 - 指向 `SPEC.md` 中关键 Behaviour 独立验收证据的引用；
-- 达到触发条件后才建立的 Steering 记录；
+- 达到触发条件后才建立、经评测与 Owner 批准的 Experience Candidate；
 - Legacy baseline 与模板升级记录。
 
 ## 11. 入门 Checklist（新成员第一周）

@@ -34,22 +34,26 @@
 | R2 | <一行速记> |
 | … | … |
 
-## 3. 上下文按需载入
+## 3. Context Routing Contract
 
-> 不同会话只载入相关文档，节省主上下文。
+> 稳定入口保持不变；不同任务和阶段只载入相关事实，减少噪声。在平台规则与用户当前指令之下，项目事实 / Owner Doc > Skills > memory / 建议性上下文。
 
-| 会话目的 | 必载 | 按需 |
+| 层级 / 会话目的 | 必载 | 按需 |
 | --- | --- | --- |
+| Always-on | [`../README.md`](../README.md)、本表、HARNESS §0.0 / §8 | 无 |
 | 写新业务功能 | [`SPEC.md`](SPEC.md) 对应用例 | 通信契约（若涉及消息） |
 | 改 <核心封装层> | [`../HARNESS.md`](../HARNESS.md) §4.x | 对应里程碑 |
 | 改 UI 组件 | [`../HARNESS.md`](../HARNESS.md) §4.x UI 段 | 术语表相关词条 |
 | 加 / 改依赖 | [`deps-and-configs.md`](deps-and-configs.md) | 上一篇相关 ADR |
 | 起 ADR | [`adr/_template.md`](adr/_template.md) | 相关决议卡 |
 | 评审 PR | [`../HARNESS.md`](../HARNESS.md) §8 + 改动涉及 spec | 里程碑 DoD |
-| 处理重复失败 | [`harness-controls.md`](harness-controls.md) Steering Log + 失败证据 | 相关 Guide / Sensor / ADR |
-| 新成员 D1 | [`../README.md`](../README.md)、[`SPEC.md`](SPEC.md)、HARNESS §0/§8 | 术语表 |
+| 处理重复失败 / 高严重度逃逸 | [`harness-controls.md`](harness-controls.md) Experience Promotion + 失败证据 | 相关 Guide / Sensor / ADR |
+| Phase-loaded：准备 commit / release | [`git-commit-conventions.md`](git-commit-conventions.md) + 对应发布条件 | 回滚 / 运维文档 |
+| 新成员 D1 | [`../README.md`](../README.md)、HARNESS §0/§8 | SPEC、术语表按学习目标加载 |
 
-## 4. Self-correction 与 Steering
+Routing Probe（可由 agent 自检，不新增用户动作）：场景是否命中；改动路径 / 系统边界是否有 Owner Doc；Closure Evidence 锚点是否可达。任一缺失或来源冲突时，先暴露缺口，不猜测或平均融合。
+
+## 4. Self-correction 与 Experience Promotion
 
 当前变更失败时：
 
@@ -58,7 +62,7 @@
 3. 重跑同一 Sensor，直到通过；
 4. 不得通过忽略规则、降低阈值或删除测试制造假绿。
 
-同类失败至少出现两次或形成趋势证据时：将证据写入 [`harness-controls.md`](harness-controls.md) Steering Log，判断缺 Guide、缺 Sensor、二者冲突，还是目标不清楚。单次失败只修当前问题；高影响 Harness 改动由 agent 提案、Owner 批准，并用负向探针验证。
+同类失败至少两次，或一次高严重度逃逸时：把证据写入 [`harness-controls.md`](harness-controls.md)，先分类为项目事实、Candidate Skill、Gate、Sensor、普通代码或一次性记忆。单次普通失败只修当前问题。Agent 只能提出 Candidate；原失败回放、反例 / 非适用例、路由 smoke、Owner 批准和回滚条件齐备后才能晋级正式控制。
 
 ## 5. 提交前自查
 

@@ -10,10 +10,14 @@
 | 4 | **从旧单体迁一块能力过来** | `migration-ledger.md`（解绑账目） | R2 旧单体禁复活（迁完即断 import） | `src/<新模块>/**` + 在账目里勾掉对应行 | 主仓 grep 不到 `@acme/monolith` 该模块引用 |
 | 5 | **加 / 改 / 删依赖** | `deps.md` + `adr/README.md` | R2 禁旧单体、不引同类第二套 ORM | `package.json`（lockfile 同步）+ 新 ADR | `pnpm install --frozen-lockfile` 无漂移 + ADR Accepted |
 
-## 按需载入（节选）
+## Context Routing（节选）
 
-| 会话目的 | 必载 | 按需 |
+| 层级 / 会话目的 | 必载 | 按需 |
 | --- | --- | --- |
+| Always-on | `README.md`、本表、`HARNESS-redlines.md` | 无 |
 | 写新用例 | `SPEC.md` 对应用例 | `openapi.yaml`（若动接口） |
 | 迁旧单体能力 | `migration-ledger.md` | 旧单体对应模块源码 |
 | 改依赖 | `deps.md` | 上一篇相关 ADR |
+| Phase-loaded：提交 | `scripts/check-redlines.sh` + commit 规范 | 发布说明 |
+
+Routing Probe：场景命中、目标层契约存在、关闭证据锚点可达；任一缺失或来源冲突即报告，不猜测。

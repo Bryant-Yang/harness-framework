@@ -1,6 +1,7 @@
 # AGENTS.md — node-orders-api Agent 协作契约
 
 <!-- harness:controls-read-policy=on-demand -->
+<!-- harness:context-routing=progressive-and-probed -->
 
 > 作者：Bryant Yang　最近更新：2026-06-06
 >
@@ -12,18 +13,20 @@
 Node 20 + TypeScript + Fastify + Postgres（Prisma）的订单服务。
 **使命：把订单域从 `legacy-monolith` 拆成独立服务，终态主仓不再 import `@acme/monolith`。**
 
-## 2. 必读清单
+## 2. 上下文路由表
 
 | 优先级 | 文件 | 用途 |
 | --- | --- | --- |
-| P0 | `README.md` | 样例说明与项目设定 |
-| P0 | `HARNESS-redlines.md` | 填好版红线三列表 |
-| P0 | `workflow-scenes.md` | 填好版场景表 |
-| P0 | `scripts/check-redlines.sh` | 可执行红线 grep 守门 |
-| P0 | `SPEC.md` | 关键 Behaviour 的独立证据与人工验收边界 |
-| P1（按需） | `harness-controls.md` | Guide / Sensor 与事件型 Steering；相关场景才读 |
+| Always-on | `README.md` | 样例说明与项目设定 |
+| Always-on | `workflow-scenes.md` | 场景与 Context Routing |
+| Always-on | `HARNESS-redlines.md` | 全局红线三列表 |
+| Task-loaded | `SPEC.md` | 命中业务场景时读取 Behaviour Evidence |
+| Task-loaded | `harness-controls.md` | 软约束、人工边界、重复失败或 runner 相关时读取 |
+| Phase-loaded | `scripts/check-redlines.sh` | 实现 / 提交阶段执行红线守门 |
 
 最小入场顺序：`README.md` → `workflow-scenes.md` 定位场景 → `HARNESS-redlines.md` 红线 → `scripts/check-redlines.sh` 自查。
+
+Routing Probe：确认场景已命中、改动层有对应契约、`SPEC.md` 的关闭证据锚点可达。在平台规则与用户当前指令之下，项目事实优先于 Skill 和临时 memory；冲突时直接报告。
 
 ## 3. 不可破的硬约束
 
@@ -47,3 +50,4 @@ Node 20 + TypeScript + Fastify + Postgres（Prisma）的订单服务。
 - 中文回复，必要术语保留英文。
 - 只动任务需要的文件，不顺手重构邻居代码。
 - 对契约有疑问时先停下说明冲突，不用猜测合并两套规则。
+- 单次普通失败只修当前任务；重复至少两次或一次高严重度逃逸时，才在 `harness-controls.md` 创建 Candidate，并经回放、反例与 Owner 批准后晋级。

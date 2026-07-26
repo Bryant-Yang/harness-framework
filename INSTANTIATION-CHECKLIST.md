@@ -33,6 +33,7 @@
 - [ ] `<CI_CMD>` → 真实 CI 命令串
 - [ ] `docs/harness-controls.md` 记录 Harness Framework 版本、来源 commit 与本地差异
 - [ ] 技术栈表、目录树、分层箭头按项目实情画
+- [ ] HARNESS §0.0 Direction Contract 写清当前基线、目标状态、不变量 / 非目标、Closure Evidence 与 Change Authority
 
 ## 三、长出红线（最关键一步）
 
@@ -45,7 +46,9 @@
 
 - [ ] workflow §1 把示例 8 行改成你项目的真实场景（小项目 3–4 行即可）
 - [ ] 每行 5 列（先读哪份 / 守哪条红线 / 产出在哪 / DoD）都答全
-- [ ] workflow §3「按需载入」与 §1 场景对应
+- [ ] workflow §3 区分 always-on / task-loaded / phase-loaded，并与 §1 场景对应
+- [ ] Routing Probe 能检查场景命中、改动路径 / 边界的 Owner Doc 和 Closure Evidence 锚点
+- [ ] 在平台规则与用户当前指令之下，优先级明确为项目事实 / Owner Doc > Skills > memory / 建议性上下文；冲突时报告，不平均融合
 
 ## 五、建立控制闭环
 
@@ -55,7 +58,9 @@
 - [ ] 约束分成 Deterministic Gate / Inferential Review Criterion / Human Acceptance Decision
 - [ ] 关键 Behaviour 的独立证据只写在 `SPEC.md`；Controls 仅引用用例锚点，不双写
 - [ ] Legacy 项目的 baseline 有生成命令与只拦新增的 diff 命令
-- [ ] Steering 采用事件触发：同类失败至少两次或出现趋势后才建记录；初始化时不填空行
+- [ ] Experience Promotion 采用事件触发：同类失败至少两次、出现趋势或一次高严重度逃逸才建 Candidate；初始化时不填空行
+- [ ] Candidate 记录 Evidence、分类、适用 / 不适用、触发与正反例、Eval、Owner、版本 / 回滚；未经批准不覆盖正式 Skill 或契约
+- [ ] 只有项目实际存在 Codex Goal、Mission Driver 或其他 runner 时才实例化 Runner Consumption Contract；不存在时不建空配置
 
 ## 六、清理示例
 
@@ -114,5 +119,7 @@
 5. **探针清理**：违规探针是否已删除，最终 `check-redlines.sh` 是否恢复通过？
 6. **可闭环**：重要目标是否有 Guide、Sensor/人工确认、失败处置和 Owner？
 7. **行为可信**：关键 Behaviour 是否有独立于当前实现生成过程的验收证据？
-8. **可演进**：达到触发条件的重复失败是否进入 Steering Log，模板版本与本地差异是否可追溯？
+8. **可演进**：达到触发条件的经验是否先成为可评测 Candidate，经 Owner 批准后才晋级，模板版本与本地差异是否可追溯？
 9. **资产无漂移**：若项目存在 AI-facing 资产，声明、实际文件、引用和职责是否仍一致？
+10. **可路由**：agent 是否只加载当前任务 / 阶段所需事实，并能用 Probe 发现漏载或冲突？
+11. **Runner 有边界**：若存在 runner，它是否消费 Closure Evidence 与权限合同，而不拥有项目事实或降低门禁？

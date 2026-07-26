@@ -1,6 +1,7 @@
 # AGENTS.md — <PROJECT> Agent 协作契约
 
 <!-- harness:controls-read-policy=on-demand -->
+<!-- harness:context-routing=progressive-and-probed -->
 
 > 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>
 >
@@ -28,20 +29,21 @@
 
 > 示例（dw_gis3d）：Vue 3 + TS + Vite + 原生 Cesium + shadcn-vue。使命：彻底替代 frontend 对 HT 商业库的依赖。
 
-## 2. 必读清单（按优先级）
+## 2. 上下文路由表
 
 | 优先级 | 文件 | 用途 |
 | --- | --- | --- |
-| P0 | [`README.md`](README.md) | 文档地图：按角色 / 任务找入口 |
-| P0 | [`HARNESS.md`](HARNESS.md) | 工程契约：北极星 / 技术栈 / 目录 / **红线（§8）** |
-| P0 | [`docs/SPEC.md`](docs/SPEC.md) | 业务规格总纲：用例索引 + 业务决议卡 |
-| P0 | [`docs/workflow.md`](docs/workflow.md) | **按场景的工作流索引**——做事前先定位你属于哪一行 |
-| P1（按需） | [`docs/harness-controls.md`](docs/harness-controls.md) | Guide / Sensor 控制台账；仅在场景涉及软约束、人工边界或重复失败时读取 |
-| P0 | [`docs/git-commit-conventions.md`](docs/git-commit-conventions.md) | commit 格式（commitlint 强制） |
-| P1（按需） | [`docs/<模块>.md`](docs/) | 具体业务/契约文档 |
-| P1（按需） | [`docs/adr/`](docs/adr/) | 已决决策记录 |
+| Always-on | [`README.md`](README.md) | 文档地图：按角色 / 任务找入口 |
+| Always-on | [`docs/workflow.md`](docs/workflow.md) | **按场景的工作流索引**——先定位你属于哪一行 |
+| Always-on | [`HARNESS.md`](HARNESS.md) §0.0 / §8 | 当前方向、关闭证据与全局红线 |
+| Task-loaded | [`docs/SPEC.md`](docs/SPEC.md) | 命中业务场景时读取对应规格与 Behaviour Evidence |
+| Task-loaded | [`docs/harness-controls.md`](docs/harness-controls.md) | 仅在场景涉及软约束、人工边界、重复失败或 runner 时读取相关段 |
+| Task-loaded | [`docs/<模块>.md`](docs/) / [`docs/adr/`](docs/adr/) | 只读当前路径 / 边界对应的 Owner Doc |
+| Phase-loaded | [`docs/git-commit-conventions.md`](docs/git-commit-conventions.md) | 只在准备 commit 时载入 |
 
-最小入场顺序：**README → workflow.md 找到对应场景 → HARNESS.md 红线 → 该场景指向的具体文档**。
+最小入场顺序：**README → workflow.md 找到对应场景 → HARNESS.md §0.0 / §8 → 该场景指向的具体文档**。不要求开工时通读 SPEC、Controls、全部 ADR 或提交规范。
+
+Routing Probe：开工前确认“场景已命中、改动路径 / 边界有 Owner Doc、Closure Evidence 锚点可达”。在平台规则与用户当前指令之下，项目事实 / Owner Doc > Skills > memory / 建议性上下文；冲突时暴露冲突并停在该分支。
 
 ## 3. 不可破的硬约束（违反立即停手并向用户报警）
 
@@ -86,7 +88,7 @@
 - **改动外科手术式**：只动需要动的；不「顺手美化」邻居代码 / 注释 / 格式。
 - 拿不准就停下来问，不要瞎猜。冲突的两个模式不要平均融合——选一个、说明为什么、把另一个标出来。
 - 「Completed」只在所有验证都过之后才能说；任何步骤被跳过都要显式说明。
-- 同类失败至少出现两次或形成趋势证据时，不只修当前代码：把证据写入 `docs/harness-controls.md` Steering Log，提议升级 Guide / Sensor，由 Owner 批准。单次失败只修当前问题。
+- 单次普通失败只修当前问题。同类失败至少两次，或一次高严重度逃逸时，按 `docs/harness-controls.md` 生成 Candidate；先分类、回放原失败并跑反例 / 路由 smoke，再由 Owner 决定是否升级 Guide / Sensor / Skill / Gate。Agent 不得自动覆盖正式契约或 Skill。
 
 ## 6. 跨 agent 配置约定
 
