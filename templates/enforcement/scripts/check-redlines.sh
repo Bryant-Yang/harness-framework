@@ -1,65 +1,71 @@
 #!/usr/bin/env bash
-# 红线 grep 守门 —— 与 HARNESS.md §8 一一对应，任一命中即 exit 1。
-#
-# 这是最跨语言、最不依赖工具链的红线闸门：哪怕项目没有 eslint，
-# 一条 grep 也能把「碰即停」的约束变成机械拦截。CI 与 pre-commit 都调它。
-#
-# 用法：bash scripts/check-redlines.sh
-# 退出码：0 = 全部清零；1 = 有红线被触发（合并应被拦下）
-#
-# @author <AUTHOR>
-set -uo pipefail
-
+# Lexical smoke checks only: grep is not a complete syntax / semantic analyzer.
+# Exit: 0 PASS, 1 violation, 2 configuration / scanner error. CI must block 1 and 2.
+set -o pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-
-# 默认只扫源码类文件；按项目语言改这里
-INCLUDES=(--include='*.ts' --include='*.tsx' --include='*.js' --include='*.vue' --include='*.py' --include='*.go')
+INCLUDES=(--include='*.ts' --include='*.tsx' --include='*.js' --include='*.py' --include='*.go')
 EXCLUDES=(--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude-dir=coverage --exclude-dir=vendor)
 
-fail=0
+# Fill from the approved contract independently of the active checks.
+EXPECTED_IDS=()
 
-# check <红线号> <说明> <ERE 模式> [搜索路径...]
-#   命中任一行即记一笔失败，并打印命中位置（文件:行号:内容）。
+fail=0
+error=0
+seen=()
 check() {
+  if [ "$#" -lt 4 ]; then
+    echo 'ERROR: check requires ID, message, pattern and explicit paths' >&2
+    error=1; return
+  fi
   local id="$1" msg="$2" pattern="$3"; shift 3
-  local paths=("$@"); [ ${#paths[@]} -eq 0 ] && paths=(".")
-  local missing=0
-  for path in "${paths[@]}"; do
-    if [ ! -e "$path" ]; then
-      printf '✗ [%s] %s\n' "$id" "$msg"
-      printf '      搜索路径不存在：%s\n' "$path"
-      missing=1
-      fail=1
+  local paths=("$@") hits status prior
+  for prior in "${seen[@]}"; do
+    if [ "$prior" = "$id" ]; then
+      printf 'ERROR [%s]: duplicate rule\n' "$id" >&2; error=1; return
     fi
   done
-  [ "$missing" -ne 0 ] && return
-
-  local hits
-  hits="$(grep -rnE "${INCLUDES[@]}" "${EXCLUDES[@]}" "$pattern" "${paths[@]}" 2>/dev/null || true)"
-  if [ -n "$hits" ]; then
-    printf '✗ [%s] %s\n' "$id" "$msg"
-    printf '%s\n' "$hits" | sed 's/^/      /'
-    fail=1
+  seen+=("$id")
+  for path in "${paths[@]}"; do
+    if [ ! -e "$path" ]; then
+      printf 'ERROR [%s]: missing search path %s\n' "$id" "$path" >&2
+      error=1; return
+    fi
+  done
+  # grep 1 means no match; syntax / read / tool errors must remain errors.
+  hits="$(grep -rnE "${INCLUDES[@]}" "${EXCLUDES[@]}" -- "$pattern" "${paths[@]}")"
+  status=$?
+  case "$status" in
+    0) printf 'FAIL [%s]: %s\n%s\n' "$id" "$msg" "$hits"; fail=1 ;;
+    1) ;;
+    *) printf 'ERROR [%s]: grep exited %s\n' "$id" "$status" >&2; error=1 ;;
+  esac
+}
+finish() {
+  local expected active found
+  if [ "${#EXPECTED_IDS[@]}" -eq 0 ]; then
+    echo 'ERROR: no rules configured; declare EXPECTED_IDS and enable checks' >&2
+    error=1
   fi
+  for expected in "${EXPECTED_IDS[@]}"; do
+    found=0
+    for active in "${seen[@]}"; do [ "$active" != "$expected" ] || found=$((found + 1)); done
+    if [ "$found" -ne 1 ]; then
+      printf 'ERROR [%s]: expected one active check, got %s\n' "$expected" "$found" >&2; error=1
+    fi
+  done
+  for active in "${seen[@]}"; do
+    found=0
+    for expected in "${EXPECTED_IDS[@]}"; do [ "$active" != "$expected" ] || found=$((found + 1)); done
+    if [ "$found" -ne 1 ]; then
+      printf 'ERROR [%s]: rule absent or duplicated in EXPECTED_IDS\n' "$active" >&2; error=1
+    fi
+  done
+  [ "$error" -eq 0 ] || exit 2
+  [ "$fail" -eq 0 ] || exit 1
+  printf 'PASS: %s configured lexical checks\n' "${#seen[@]}"
 }
 
-# ── 在这里逐条登记你的红线（编号与 HARNESS §8 严格对齐）──────────────────
-# 每条红线在 HARNESS §8 的「守门命令」列里就是下面这一行 check(...)。
-# 填不出 grep 模式的「红线」不是红线——把它降级到北极星或普通规范。
-#
-# 示例（删掉换成你项目的）：
-#   check "R2" "禁止类型逃逸 as any / as unknown" '\bas any\b|as unknown as' src
-#   check "R5" "禁止引入第二套 UI 库"            "from ['\"](element-plus|naive-ui|antd)" src
-#   check "R6" "被替换的旧依赖禁止复活"          "import .*['\"](legacy-lib|@old/.+)['\"]" src
-#   check "R7" "业务层禁止裸 import 重依赖"       "from ['\"]heavydep(/|['\"])" src/modules
-# ──────────────────────────────────────────────────────────────────────
-
-# <在此粘贴你的 check 行>
-
-if [ "$fail" -ne 0 ]; then
-  echo ""
-  echo "红线被触发，合并应被拦下。修掉上面的命中再提交。"
-  exit 1
-fi
-echo "✓ 红线全部清零"
+# Enable project checks here; an unconfigured template intentionally exits 2.
+# check "R1" "legacy dependency must use the approved replacement" "legacy-lib" src
+finish

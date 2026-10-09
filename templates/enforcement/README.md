@@ -1,80 +1,42 @@
-# enforcement/ —— 让红线长出牙齿
+# 让启用控制真正守门
 
-> 这一层是 harness「有效」与「摆设」的分水岭。
->
-> 红线写在 `HARNESS.md §8` 里只是**声明**；真正起作用是因为它被编译成**机械闸门**——
-> agent 违反就过不了 lint / CI，合不进主分支。**没有这一层，红线就是没人查的装饰。**
+每条启用的机械红线都要有实际检查；观察模式、待实现规则、语义 review 和人工验收分别登记，不能宣称全部已执行。
 
-这一层只负责 **Deterministic Gates**。需要语义权衡的规则进入 `docs/harness-controls.md` 的 Inferential Review Criteria；业务意图、风险和责任进入 Human Acceptance Decisions。不要为了“全部自动化”把软判断硬塞进高误报 grep。
+## 接线
 
-## 核心抽象：契约是「每条红线必须有机械守门命令」，工具是实现细节
+1. 从 HARNESS §8 选启用的阻断规则，确定输入范围、匹配语义与检测边界。
+2. 复制 `scripts/check-redlines.sh` 到项目 `scripts/`，独立填写 `EXPECTED_IDS` 和启用的 `check` 行，改语言后缀与路径。未配置模板返回 ERROR，不能当绿灯。
+3. 对语法 / 结构保证接 AST / lint / 结构测试。TS 骨架注册 parser / plugin，适配层仅豁免重依赖，不豁免全局旧依赖禁令。
+4. 有对应提交规范时复制 commitlint 配置，并将 CLI 和 preset 写进项目 lockfile；CI 骨架检查 PR / push 范围。本地 commit-msg hook 只能补充，不能替代 CI。
+5. 合并到现有 CI，按实际授权配置 required checks / branch protection；无权限则列出具体外部待办。
+6. 验证每条规则的合法、违规与错误输入；清理本次探针，必要检查再通过。失败反馈要能定位规则、文件和修复事实源。
 
-框架真正要求的**不是「用 eslint」**，而是「每条红线都得有一道能机械执行的闸门」。守门用 eslint / ArchUnit / import-linter / grep 都行——**换实现、不换契约**。
+## 结果与检测边界
 
-所以本目录分两层：
+`check-redlines.sh`：0 = PASS，1 = 违规 FAIL，2 = 配置 / 扫描 ERROR。CI 两种非零都阻断。规则缺失、重复、搜索路径缺失、正则或工具出错不能显示通过。`EXPECTED_IDS` 由已批准契约维护，不能随着删除 `check` 行同步削弱。
 
-```
-enforcement/
-├── scripts/check-redlines.sh   # 【语言无关共享底座】任何「禁止出现 X」红线都靠它，跨语言只改文件后缀
-├── commitlint.config.cjs       # 【语言无关】只校验 git message 文本
-├── ci.yml                      # 【骨架】串起闸门，换构建命令即可
-├── ts/      eslint.config.skeleton.ts   # JS/TS：no-restricted-imports / no-explicit-any
-├── java/    ArchUnitRedlinesTest.java   # Java：ArchUnit 分层/禁依赖 + enforcer/checkstyle
-└── python/  pyproject-redlines.toml     # Python：import-linter + ruff + mypy
-```
+grep 只检查有限文本模式，可能漏掉多行、动态 import、别名、计算属性，也可能命中注释 / 字符串。不得据此保证“任何形式引用”或业务语义。TypeScript `no-restricted-imports` 骨架覆盖静态 import / export；动态 import / require / 间接访问需按实际项目补 AST 控制和探针。Java / Python 目录提供可接入骨架，本框架本轮未执行 ArchUnit、ruff、mypy、import-linter 的实际 toolchain；跨语言 grep smoke 不能冒充这些验证。
 
-> **80% 跨语言免费**（文档层 + grep 层 + commitlint + CI 骨架），**20% 按语言换闸门**（禁 import/分层那类）。
-> Java/Python 用户拷对应子目录骨架即可，不必从零接。
+## Legacy baseline
 
-## 三类闸门，按红线性质选
-
-| 红线性质 | TS | Java | Python | 共同底座 |
-| --- | --- | --- | --- | --- |
-| 禁某 import / 单向分层 | eslint `no-restricted-imports` | ArchUnit | import-linter | — |
-| 禁类型逃逸 / 危险写法 | eslint `no-explicit-any` | Error Prone / SpotBugs | ruff / mypy | — |
-| 禁某依赖进 classpath | （lockfile 审查） | maven-enforcer | （禁 import） | — |
-| **通用「禁止出现 X」** | — | — | — | **`check-redlines.sh`（改后缀，零逻辑改动）** |
-| commit 格式 | commitlint | commitlint | commitlint / commitizen | — |
-| CI 兜底 | GitHub Actions | 同 CI 换 `mvn verify` | 同 CI 换 `ruff`/`pytest` | `ci.yml` |
-
-## 黄金判据：红线 ⇄ 守门命令，一一对应
-
-每条 `HARNESS §8` 红线**必须**在这里有一行对应的守门命令（grep 模式 / lint 规则 / commitlint 项）。
-
-- 能写出守门命令 → 它是红线，登记进来。
-- **写不出守门命令** → 它不是红线，降级到北极星原则或普通规范。别让查不了的东西冒充红线。
-
-> 这条判据把「红线」从一句口号变成可执行物。`HARNESS.template.md §8` 的三列表
-> （红线 \| 守门命令 \| 谁拦）就是强制你对每条红线填满这一行。
-
-## Sensor 输出必须适合自我修正
-
-只输出 `failed` 不够。每个门禁错误至少包含：
-
-- 控制或红线编号；
-- 文件与位置；
-- 违反了什么目标；
-- 应回读哪份 Guide，或应移动到哪个合法边界；
-- 修复后重跑的同一条命令。
-
-反馈越明确，agent 越能在交给人之前完成 Self-correction。不要在报错里放无法执行的泛泛建议。
-
-## 接线步骤
-
-1. 把 `scripts/check-redlines.sh` 拷到项目 `scripts/`，按你的红线填 `check(...)` 行（改 `INCLUDES` 为目标语言后缀）。
-2. 按语言拷对应子目录：TS → `ts/eslint.config.skeleton.ts`；Java → `java/`；Python → `python/`。
-3. 拷 `commitlint.config.cjs`，`type-enum` 与 `git-commit-conventions.md §3` 对齐。
-4. 拷 `ci.yml`，第一步就是 `bash scripts/check-redlines.sh`。
-5. 装 pre-commit 钩子（`simple-git-hooks` / `husky` / `lefthook` 任选）：
-   - `pre-commit` → `check-redlines.sh` + `lint`
-   - `commit-msg` → `commitlint`
-6. 在仓库设置里把 CI 设为**合并必需检查**（branch protection）——这一步最容易漏，漏了前面全白做。
-
-## 自检
+框架 `scripts/check-baseline.py` 采集 `文件:行号:内容` 输出，移除行号但保留文件、内容及重复次数；历史移动不误报，同文件新增同样命中仍失败。扫描命令只允许 0 = 有命中、1 = 无命中；其他返回码报 ERROR。不要以 `|| true` 吞错。
 
 ```bash
-# 故意写一行违反红线的代码，确认闸门真的会红：
-bash scripts/check-redlines.sh   # 应 exit 1 并指出命中位置
+python3 /path/to/framework/scripts/check-baseline.py capture docs/baselines/R1.txt -- \
+  rg -n --no-heading --color never 'legacy-lib' src
+# baseline 经对应 Owner 批准并纳入版本控制后，CI 使用同一命令
+python3 /path/to/framework/scripts/check-baseline.py check docs/baselines/R1.txt -- \
+  rg -n --no-heading --color never 'legacy-lib' src
 ```
 
-闸门拦不下故意的违规 = 闸门没接好，等于没有。
+已有 baseline 不会被 capture 覆盖。更换匹配模式、扫描目录或批准扩大时明确 review；文本 baseline 允许等量等内容的移动，不保证每个语义引用的身份。
+
+## 框架自身验证
+
+```bash
+python3 scripts/test-enforcement.py
+npm ci --prefix tests/enforcement/ts --ignore-scripts
+python3 scripts/test-enforcement.py --with-toolchains
+```
+
+验证直接运行发货的脚本和 TS 骨架，包含各文本规则、漏配、坏正则、缺路径、scanner failure、baseline、新增重复命中、TS 正反例与 commitlint。普通 Python probes 不执行 TS，输出明确 NOT RUN；仓库 CI 必须执行锁定 toolchain fixture。

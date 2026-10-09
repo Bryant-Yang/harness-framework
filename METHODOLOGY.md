@@ -60,10 +60,10 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 
 **做法（两个机制是一体两面）**：
 
-- **机制 1 唯一契约源**：`AGENTS.md` 是**唯一**真契约。它正好是 [agents.md 开放标准](https://agents.md/)(Linux 基金会 Agentic AI Foundation 主推),20+ 工具原生读取,所以「单一源」这个选择同时拿到了「最大兼容」。
+- **机制 1 唯一契约源**：`AGENTS.md` 是**唯一项目入口**；具体规则分别由指定 Owner Doc 持有。它正好是 [agents.md 开放标准](https://agents.md/)(Linux 基金会 Agentic AI Foundation 主推),20+ 工具原生读取,所以「单一源」这个选择同时拿到了「最大兼容」。
 - **机制 0 入口指针**：对**不**原生读 `AGENTS.md` 的工具(Claude Code、Gemini CLI),放一个**薄指针文件**,内容只有「契约源是 AGENTS.md,先读它」+ 一行 `@AGENTS.md` 导入。对优先级会盖过 AGENTS.md 的工具(Antigravity 的 `GEMINI.md`),也放薄指针,避免「空文件覆盖真契约」。
 
-**铁律**：**指针只指,不写规则**。任何指针文件里冒出一条实质约束,就是漂移的起点,立刻搬回 `AGENTS.md`。
+**铁律**：**指针只指,不写规则**。任何指针文件里冒出一条实质约束,就是漂移的起点,搬回对应 Owner Doc，由 `AGENTS.md` 路由。
 
 **为什么不直接每个工具写满**：N 份满配置 = N 处要同步,改一条红线要改 N 个文件,迟早不一致。一份真契约 + N 个指针 = 改一处,处处生效。
 
@@ -79,10 +79,9 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 
 **北极星原则**（5–7 条）：项目级价值排序。例如「单一来源」「边界先行」「可测胜过可看」「反 God-Class」。当两个做法冲突时，用北极星裁决，而不是各凭口味。
 
-**红线 N 条**：驳回级硬约束，**编号、可 grep、违反必停手**。红线和「最佳实践」的区别在于——最佳实践是建议，红线是「碰了就 reject，不讨论例外」。
+**红线 N 条**：驳回级硬约束，**稳定编号、机械检测、违反阻断**。红线和「最佳实践」的区别在于——最佳实践是建议，红线是「碰了就 reject，不讨论例外」。
 
-> 红线的黄金标准：**能写成一条 grep 命令**。
-> 写不成 grep 的「红线」往往是软约束，应该降级到北极星或普通规范。
+> 红线的黄金标准：可稳定机械判断且有合法 / 违规 / 错误探针。grep 仅提供文本 smoke，语法 / 语义约束需要 AST / lint / 结构测试；需要权衡的判断登记为 review criterion。
 
 **裁剪**：Direction Contract 与北极星必留，但小项目各写一两行即可。红线按项目实情，宁少勿滥——10 条真红线 > 30 条没人查的「红线」。
 
@@ -98,7 +97,7 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 - **lint 规则**（`no-restricted-imports` regex / `no-explicit-any`）：「禁止 import」「禁止类型逃逸」「单向依赖」编译成 lint error。
 - **commitlint / CI 阈值**：提交格式、覆盖率这类。
 
-最后由 **CI + branch protection** 兜底：闸门不全绿，**agent 想合也合不进**。这是「红线全部清零」从自觉变成事实的唯一办法。
+最后由 **CI + branch protection** 兜底：闸门不全绿，**agent 想合也合不进**。这是启用的阻断红线可执行的基础；Legacy 对已批准 baseline 只拦新增违规。
 
 **黄金判据**：红线 ⇄ 守门命令**一一对应**。`HARNESS §8` 用三列表（红线 \| 守门命令 \| 谁拦）强制你为每条红线填出那行命令。**填不出命令的不是红线**——降级到北极星或普通规范，别让查不了的东西冒充红线。
 
@@ -115,7 +114,7 @@ Guide → Agent 变更 → Sensor → Self-correction → 再验证
 
 `enforcement/` 已按语言出骨架（`ts/` `java/` `python/`），拷对应子目录填占位符即可，不必从零接。所以跨语言是「换实现的有限工作」，不是重写。
 
-**裁剪**：不可裁。这是 harness「是」还是「像」的分水岭。哪怕只有一条红线，也要给它一道闸门。
+**裁剪**：每条启用的机械红线必须有闸门；没有这类风险时可标记不适用，不为满足数量编造规则。观察模式与待实现控制单列。
 
 ---
 
@@ -163,7 +162,7 @@ agent 进场第一动作就是「在这张表里定位我属于哪一行」。�
 - **必含回滚条件**：什么信号出现时该推翻这个决定。
 - **何时写有明确触发**：引入/剔除依赖、改跨模块约定、调性能预算、做红线例外、「未来 6 个月有人会问为啥」。
 
-**裁剪**：几乎不可裁，但启动期可只要求关键几篇 Accepted。
+**裁剪**：有重大决策时采用 ADR；小工具无需空档案。Accepted 历史不变，当前 HARNESS 必须更新；替代关系只在明确决策领域生效。
 
 ---
 
@@ -201,9 +200,9 @@ Conventional Commits（`type(scope): subject` + body 解释 why），CI commitli
 
 ## 机制 9 —— 提交前自查清单
 
-合入前自问、全「是」才能 request review：用例编号写了吗？DoD 勾了吗？红线 grep 清零了吗？CI 全绿吗？该起的 ADR 起了吗？commit 合规吗？相关 Sensor 复验了吗？关键 Behaviour 有独立证据或明确的人类验收吗？
+合入前自问、适用项通过才能完成验收：用例编号写了吗？DoD 勾了吗？启用控制通过且已批准 baseline 无新增违规了吗？CI 全绿吗？该起的 ADR 起了吗？commit 合规吗？相关 Sensor 复验了吗？关键 Behaviour 有独立证据或明确的人类验收吗？
 
-**裁剪**：问题条目按项目增删，「全是才能合」的形式必留。
+**裁剪**：只核对适用项，必要检查失败或未运行不能说完成；删去未采用的 SPEC / 里程碑 / ADR 引用。
 
 ---
 
@@ -242,7 +241,7 @@ Experience Promotion Loop 是：
 | 重试、状态、幂等、确定性转换 | 普通代码 |
 | 一次性上下文 | task note / memory，不晋级 |
 
-Candidate 必须记录纠正证据或 diff、适用与不适用范围、触发条件、正反例、目标输出、Owner、版本和回滚条件。Agent 可以生成 Candidate，**不得自动覆盖正式 Skill、Guide、Sensor 或项目契约**。
+Candidate 必须记录纠正证据或 diff、适用与不适用范围、触发条件、正反例、目标输出、Owner、版本和回滚条件。自主提炼的经验先成为 Candidate，不自动覆盖正式控制；用户明确授权维护某个 Skill / 契约时直接修改并验证。召回、评测与退役见 [`docs/experience-learning.md`](docs/experience-learning.md)。
 
 约束分三级，不把所有重要事情都硬塞进 grep：
 
@@ -250,7 +249,7 @@ Candidate 必须记录纠正证据或 diff、适用与不适用范围、触发�
 2. `Inferential Review Criterion`：需要语义与权衡，输出证据和建议。
 3. `Human Acceptance Decision`：涉及业务意图、风险和责任，由明确责任人签收。
 
-**裁剪**：小项目可只保留 3–5 行 Control Map 和一段覆盖边界；可以裁行数，不能裁“重要目标必须有检测或人工确认路径”这个原则。
+**裁剪**：小项目按实际风险保留必要 Control Map 行和一段覆盖边界；可以裁行数，不能裁“重要目标必须有检测或人工确认路径”这个原则。
 
 ### 实例化后的增量维护
 
@@ -274,8 +273,8 @@ Harness Framework 只定义该边界，不实现 flow DSL、恢复引擎或任�
 
 | 规模 | 建议取哪些机制 |
 | --- | --- |
-| 个人脚本 / 小工具 | 1（AGENTS）+ 2 精简版红线 |
-| 单人/小队产品 | 1 + 2 + 4（workflow）+ 7（commit）+ 5（ADR 按需）+ 精简 Control Map |
+| 个人脚本 / 小工具 | minimal：AGENTS + HARNESS + workflow + Controls；机械红线按实际风险启用 |
+| 单人/小队产品 | product：minimal + SPEC / Behaviour Owner Doc；commit / ADR 按实际路径增加 |
 | 多人 + 真实业务方 | 全部 11 个，Behaviour evidence 不可省 |
 | 替换型 / 强约束迁移项目 | 全部 11 个，且红线要写「禁止旧依赖复活」并维护 baseline |
 

@@ -1,125 +1,43 @@
-# 实例化检查清单 —— 把框架落到新旧工程
+# 实例化检查清单
 
-> 跟着勾。全部勾完，新旧工程就有了一套自洽、可 grep、可驳回的工程契约。
+按已授权目标核对适用项。已有接入只执行[维护矩阵](AI-ADOPTION-PROTOCOL.md#已接入项目维护口径)，普通业务任务不重新实例化。
 
-## 零、先确认执行模式
+## 1. 选择组合并保留现状
 
-- [ ] 只有首次接入的新项目、旧项目或迁移项目才执行完整清单
-- [ ] 已完成 Harness 实例化的项目转到 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 的“已接入项目维护口径”，不重跑本清单
-- [ ] 仅当项目实际存在 Agent 定义、Skills、编排器或工具专用规则时，核对声明与文件、悬空引用和职责重叠；不存在时不建空清单
-- [ ] 新增 AI-facing 资产已分类为“现有资产完整覆盖 / 可泛化复用 / 意图明确的专业化 / 职责不同”；语义相似只作为 review 证据，不直接设 Gate，工具必需的独立薄指针不算重复
+- [ ] 先审计真实目标、风险、已有 Owner Doc 与权限，选择[最小组合或产品组合](docs/instantiation-profiles.md)。
+- [ ] 新项目仅复制所需模板、改名并填入事实；删除未采用的 SPEC / ADR / 提交规范等引用。
+- [ ] 旧项目不全量复制、不覆盖 README / AGENTS / 工具指针 / CI；在原文最小合并，或生成明确待合并的候选。
+- [ ] 作者只在项目要求时填写；红线数量由实际风险决定，没有机械红线时记录不适用。
+- [ ] 有实际 Agent / Skill / 编排资产时才审计入口、职责与引用，不建空台账。
 
-## 一、拷贝与改名
+## 2. 方向与路由闭合
 
-- [ ] 若让 AI 自动接入，先把 [`AI-ADOPTION-PROTOCOL.md`](AI-ADOPTION-PROTOCOL.md) 里的固定指令交给 agent 执行
-- [ ] 把 `templates/` 下全部文件拷到新工程根目录
-- [ ] `AGENTS.template.md` → `AGENTS.md`
-- [ ] `HARNESS.template.md` → `HARNESS.md`
-- [ ] `PROJECT-README.template.md` → `README.md`
-- [ ] `docs/SPEC.template.md` → `docs/SPEC.md`
-- [ ] `docs/workflow.template.md` → `docs/workflow.md`
-- [ ] `docs/harness-controls.template.md` → `docs/harness-controls.md`
-- [ ] `docs/git-commit-conventions.template.md` → `docs/git-commit-conventions.md`
-- [ ] `docs/adr/README.template.md` → `docs/adr/README.md`（`_template.md` 保持原名）
-- [ ] `docs/decisions/README.template.md` → `docs/decisions/README.md`
+- [ ] 当前基线、目标、不变量 / 非目标、Closure Evidence、Change Authority 清楚。
+- [ ] AGENTS 是唯一项目入口，Owner Doc 分别持有工程、业务与提交事实；工具配置保持薄指针。
+- [ ] workflow 场景包含先读文档、约束、产出和 DoD，按 always-on / task-loaded / phase-loaded 加载。
+- [ ] 场景命中、改动路径 / 边界、关闭证据的正向与非适用路由 smoke 通过。
+- [ ] 无已知框架占位符、未改名模板和悬空本地引用 / 锚点；按所选组合运行 `scripts/validate-instantiation.py`。
+- [ ] 未命中场景时先依现有事实推断可逆路径，只有实质语义或授权缺口才询问。
 
-## 二、占位符替换（全局搜替）
+## 3. 控制有证据
 
-- [ ] `<PROJECT>` → 项目名
-- [ ] `<AUTHOR>` → 作者署名
-- [ ] `<YYYY-MM-DD>` → 当天日期
-- [ ] `<MISSION>` → 使命一句话
-- [ ] `<语言>` → 团队工作语言
-- [ ] `<CI_CMD>` → 真实 CI 命令串
-- [ ] `docs/harness-controls.md` 记录 Harness Framework 版本、来源 commit 与本地差异
-- [ ] 技术栈表、目录树、分层箭头按项目实情画
-- [ ] HARNESS §0.0 Direction Contract 写清当前基线、目标状态、不变量 / 非目标、Closure Evidence 与 Change Authority
+- [ ] 每个重要目标最小登记 Guide、Sensor / 人工确认、失败处置和 Owner。
+- [ ] 机械 Gate、推理型 review、人工验收分开；所有启用的阻断控制都有实际检查。
+- [ ] 扫描器分别返回 PASS / FAIL / ERROR，出错和未配置都阻断，不使用 `|| true` 吞错。
+- [ ] 每个受影响的确定性控制验证合法、违规、错误三类结果；grep 的检测边界明确，语义保证另接 AST / lint / 结构测试。
+- [ ] Legacy 历史债使用已批准 baseline；新增违规（包括原文件新命中）阻断，不静默扩大 baseline。记录采集与比较命令，扫描错误不能当空结果。
+- [ ] 按实际提交路径接入项目 CI、commitlint 与必要 hooks；有权限时配置 required checks / branch protection，否则明确外部待办。
+- [ ] 关键 Behaviour 在 SPEC 或实际 Behaviour Owner Doc 保留独立需求证据，Controls 只引用；纯工具仍验证公开行为。
+- [ ] 必要检查通过，本次违规探针已清理；区分失败、未运行与不适用，不为全绿改变无关系统。
 
-## 三、长出红线（最关键一步）
+## 4. 经验和维护
 
-- [ ] HARNESS §8 红线逐条改写成**你项目里能 grep 的约束**
-- [ ] 每条红线确认：谁来查、用什么命令查？查不了的降级到北极星或普通规范
-- [ ] AGENTS §3「不可破硬约束」与 HARNESS §8 编号对齐
-- [ ] workflow §2「红线速记」与 HARNESS §8 编号严格对齐
+- [ ] 首次普通失败在已有任务 / PR 记录留下类别与证据链接，先修当前任务；重复至少两次或一次严重逃逸再建立 Candidate。
+- [ ] 按[经验学习协议](docs/experience-learning.md)建立稳定 ID、适用 / 排除条件、状态、回放与反例；自主候选通过评测及 Owner 授权后晋级，已有明确维护授权不重复审批。
+- [ ] Skill 效果用同条件有 / 无 Skill 的评测证明；确定性 Gate 回放不能冒充模型收益。
+- [ ] 正式规则只在一个事实源维护；薄索引按任务召回，过期或有害条目可退役并保留历史。
+- [ ] 有重大决策时追加 ADR；历史正文不改，当前 HARNESS 同步更新，替代关系限定决策领域。
+- [ ] 只在实际有 runner 时定义消费契约；没有时删除空节。
+- [ ] 记录框架版本、来源 commit 与本地差异；升级 review 上游 diff，不覆盖项目事实。
 
-## 四、场景表落地
-
-- [ ] workflow §1 把示例 8 行改成你项目的真实场景（小项目 3–4 行即可）
-- [ ] 每行 5 列（先读哪份 / 守哪条红线 / 产出在哪 / DoD）都答全
-- [ ] workflow §3 区分 always-on / task-loaded / phase-loaded，并与 §1 场景对应
-- [ ] Routing Probe 能检查场景命中、改动路径 / 边界的 Owner Doc 和 Closure Evidence 锚点
-- [ ] 在平台规则与用户当前指令之下，优先级明确为项目事实 / Owner Doc > Skills > memory / 建议性上下文；冲突时报告，不平均融合
-
-## 五、建立控制闭环
-
-- [ ] 在 `docs/harness-controls.md` 写清 Maintainability / Architecture Fitness / Behaviour 的覆盖边界
-- [ ] 每个重要目标最小登记 Guide、Sensor / 人工确认、失败处置和 Owner
-- [ ] 仅对执行方式、信任边界或成本不清的 Control 追加类型、目标类别和生命周期注记
-- [ ] 约束分成 Deterministic Gate / Inferential Review Criterion / Human Acceptance Decision
-- [ ] 关键 Behaviour 的独立证据只写在 `SPEC.md`；Controls 仅引用用例锚点，不双写
-- [ ] Legacy 项目的 baseline 有生成命令与只拦新增的 diff 命令
-- [ ] Experience Promotion 采用事件触发：同类失败至少两次、出现趋势或一次高严重度逃逸才建 Candidate；初始化时不填空行
-- [ ] Candidate 记录 Evidence、分类、适用 / 不适用、触发与正反例、Eval、Owner、版本 / 回滚；未经批准不覆盖正式 Skill 或契约
-- [ ] 只有项目实际存在 Codex Goal、Mission Driver 或其他 runner 时才实例化 Runner Consumption Contract；不存在时不建空配置
-
-## 六、清理示例
-
-- [ ] 删掉所有 `> 示例（dw_gis3d）：` 引用块
-- [ ] 删掉所有 `<!-- 占位符清单 -->` 注释（或保留作维护提示，自行决定）
-
-## 七、接线（让契约真正生效，而不只是文档）
-
-### 7.1 多工具入口指针（机制 0，agent-first 关键）
-
-> 按团队实际用的工具放对应指针。原生读 `AGENTS.md` 的工具(Codex/Cursor/Copilot/Windsurf 等)一个都不用放。
-
-- [ ] 用 Claude Code → 拷 `CLAUDE.md`（含 `@AGENTS.md`）
-- [ ] 用 Gemini CLI → 拷 `GEMINI.md`（含 `@AGENTS.md`）
-- [ ] 用 Google 反重力 Antigravity → 拷 `GEMINI.md`（防被空覆盖；它也原生读 AGENTS.md）
-- [ ] 用旧版 Cursor / 偏好 `.cursor/rules` 优先级 → 拷 `.cursor/rules/000-agents.mdc`
-- [ ] 偏好 `.github/copilot-instructions.md` → 拷该文件
-- [ ] **核对**：每个指针文件里**没有任何实质规则**，只指回 `AGENTS.md`（有规则=漂移，搬回去）
-- [ ] 落地前核对各工具当时文档（入口约定随版本变，见 [agents.md](https://agents.md/)）
-
-### 7.2 红线守门（机制 2.5，**不可跳过**——跳过等于没有 harness）
-
-> 每条 HARNESS §8 红线必须有一道对应闸门。详见 [`templates/enforcement/README.md`](templates/enforcement/README.md)。
-
-- [ ] 拷 `enforcement/scripts/check-redlines.sh` 到项目 `scripts/`，改 `INCLUDES` 为目标语言后缀，逐条填 `check(...)` 与 §8 编号对齐
-- [ ] 按语言拷守门骨架：TS → `enforcement/ts/eslint.config.skeleton.ts`；Java → `enforcement/java/`（ArchUnit）；Python → `enforcement/python/pyproject-redlines.toml`（import-linter+ruff+mypy）
-- [ ] 拷 `enforcement/commitlint.config.cjs`，`type-enum` 与 commit 规范对齐
-- [ ] 拷 `enforcement/ci.yml`，**第一步**是 `bash scripts/check-redlines.sh`
-- [ ] 装 pre-commit 钩子（simple-git-hooks / husky / lefthook）：pre-commit 跑 redlines+lint，commit-msg 跑 commitlint
-- [ ] 仓库设置里把 CI 设为**合并必需检查**（branch protection）——最易漏，漏了前面全白做
-- [ ] **自检**：故意写一行违反红线的代码，跑 `bash scripts/check-redlines.sh`，确认它 `exit 1` 并指出位置。拦不下 = 没接好 = 等于没有。
-- [ ] 报错信息包含红线编号、命中位置和修复方向，agent 能据此自我修正
-
-### 7.3 其他接线
-
-- [ ] 关键红线尽量上 lint（比 grep 更精确，能区分边界豁免）
-- [ ] 关键红线接 lint 规则（如 `no-restricted-imports`）/ CI 守门，能自动查的别靠人查
-- [ ] CI 流水线串起 `<CI_CMD>` 五件套
-
-## 八、起最初几篇 ADR
-
-- [ ] 把「为什么选这套技术栈/分层」写成 ADR-0001 起步
-- [ ] adr/README.md「启动期必落地清单」列出主线开发前必须 Accepted 的 ADR
-
-## 自检：是否真的生效
-
-> 三个判据，缺一说明契约还是「摆设」：
-
-1. **可索引**：随便给一个任务，agent 能在 workflow §1 找到对应行吗？
-2. **可 grep**：每条红线能用一行命令查吗？
-3. **可驳回**：违反红线时，是「直接 reject」还是「讨论一下例外」？后者说明它不是红线。
-
-若由 AI 自动接入，还必须额外确认：
-
-4. **负向验证**：AI 是否故意写过违规探针，并确认守门会失败？
-5. **探针清理**：违规探针是否已删除，最终 `check-redlines.sh` 是否恢复通过？
-6. **可闭环**：重要目标是否有 Guide、Sensor/人工确认、失败处置和 Owner？
-7. **行为可信**：关键 Behaviour 是否有独立于当前实现生成过程的验收证据？
-8. **可演进**：达到触发条件的经验是否先成为可评测 Candidate，经 Owner 批准后才晋级，模板版本与本地差异是否可追溯？
-9. **资产无漂移**：若项目存在 AI-facing 资产，声明、实际文件、引用和职责是否仍一致？
-10. **可路由**：agent 是否只加载当前任务 / 阶段所需事实，并能用 Probe 发现漏载或冲突？
-11. **Runner 有边界**：若存在 runner，它是否消费 Closure Evidence 与权限合同，而不拥有项目事实或降低门禁？
+验收输出：结果位置、已启用控制及证据、明确的检测边界、历史债和必要外部待办。结构检查通过只证明引用闭合，不代替实际 Sensors 与业务验收。

@@ -7,6 +7,12 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - run: bash scripts/check-framework.sh
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci --prefix tests/enforcement/ts --ignore-scripts --no-audit --no-fund
+      - run: bash scripts/check-framework.sh --with-toolchains

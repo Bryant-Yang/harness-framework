@@ -28,7 +28,7 @@ Node 20 + TypeScript + Fastify + Postgres（Prisma）的订单服务。
 
 Routing Probe：确认场景已命中、改动层有对应契约、`SPEC.md` 的关闭证据锚点可达。在平台规则与用户当前指令之下，项目事实优先于 Skill 和临时 memory；冲突时直接报告。
 
-## 3. 不可破的硬约束
+## 3. 假想项目约束
 
 1. `domain/` 是纯业务层，禁止 import `prisma` / `@prisma/client`。
 2. 被拆分的旧单体禁止复活，任何位置禁止 import `@acme/monolith`。
@@ -37,11 +37,13 @@ Routing Probe：确认场景已命中、改动层有对应契约、`SPEC.md` 的
 5. 日志必须走统一 `logger`，禁止 `console.log` / `console.debug`。
 6. 路由层禁止裸 SQL 字符串，必须经 service / repository。
 
+本样例 grep 只覆盖有限文本模式，不证明以上约束完整执行；检测边界与未实现的 CI 控制见 `HARNESS-redlines.md`。
+
 ## 4. 工作动作
 
 - 写功能前先在 `workflow-scenes.md` 找到对应场景。
 - 改动后先跑 `bash scripts/check-redlines.sh`。
-- 新代码必须补单测；覆盖率红线由 CI `vitest run --coverage` 守。
+- 按行为和风险补有价值的测试；覆盖率及 CI 是假想项目接线要求，本样例未实现。
 - `git add` 必须显式列文件，禁止 `git add .` / `git add -A`。
 - commit message 必须走 Conventional Commits。
 

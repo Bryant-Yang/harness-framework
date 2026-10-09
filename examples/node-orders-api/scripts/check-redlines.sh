@@ -1,51 +1,75 @@
 #!/usr/bin/env bash
-# node-orders-api 红线 grep 守门（填好版样例）—— 与 HARNESS-redlines.md 一一对应。
-# 这是 templates/enforcement/scripts/check-redlines.sh 填实后的样子。
-set -uo pipefail
-
+# Lexical smoke checks only: grep is not a complete syntax / semantic analyzer.
+# Exit: 0 PASS, 1 violation, 2 configuration / scanner error. CI must block 1 and 2.
+set -o pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+INCLUDES=(--include='*.ts' --include='*.tsx' --include='*.js' --include='*.py' --include='*.go')
+EXCLUDES=(--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude-dir=coverage --exclude-dir=vendor)
 
-INCLUDES=(--include='*.ts')
-EXCLUDES=(--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude-dir=coverage)
+EXPECTED_IDS=(R1 R2 R3 R4 R5 R6)
 
 fail=0
+error=0
+seen=()
 check() {
+  if [ "$#" -lt 4 ]; then
+    echo 'ERROR: check requires ID, message, pattern and explicit paths' >&2
+    error=1; return
+  fi
   local id="$1" msg="$2" pattern="$3"; shift 3
-  local paths=("$@"); [ ${#paths[@]} -eq 0 ] && paths=(".")
-  local missing=0
-  for path in "${paths[@]}"; do
-    if [ ! -e "$path" ]; then
-      printf '✗ [%s] %s\n' "$id" "$msg"
-      printf '      搜索路径不存在：%s\n' "$path"
-      missing=1
-      fail=1
+  local paths=("$@") hits status prior
+  for prior in "${seen[@]}"; do
+    if [ "$prior" = "$id" ]; then
+      printf 'ERROR [%s]: duplicate rule\n' "$id" >&2; error=1; return
     fi
   done
-  [ "$missing" -ne 0 ] && return
-
-  local hits
-  hits="$(grep -rnE "${INCLUDES[@]}" "${EXCLUDES[@]}" "$pattern" "${paths[@]}" 2>/dev/null || true)"
-  if [ -n "$hits" ]; then
-    printf '✗ [%s] %s\n' "$id" "$msg"
-    printf '%s\n' "$hits" | sed 's/^/      /'
-    fail=1
+  seen+=("$id")
+  for path in "${paths[@]}"; do
+    if [ ! -e "$path" ]; then
+      printf 'ERROR [%s]: missing search path %s\n' "$id" "$path" >&2
+      error=1; return
+    fi
+  done
+  # grep 1 means no match; syntax / read / tool errors must remain errors.
+  hits="$(grep -rnE "${INCLUDES[@]}" "${EXCLUDES[@]}" -- "$pattern" "${paths[@]}")"
+  status=$?
+  case "$status" in
+    0) printf 'FAIL [%s]: %s\n%s\n' "$id" "$msg" "$hits"; fail=1 ;;
+    1) ;;
+    *) printf 'ERROR [%s]: grep exited %s\n' "$id" "$status" >&2; error=1 ;;
+  esac
+}
+finish() {
+  local expected active found
+  if [ "${#EXPECTED_IDS[@]}" -eq 0 ]; then
+    echo 'ERROR: no rules configured; declare EXPECTED_IDS and enable checks' >&2
+    error=1
   fi
+  for expected in "${EXPECTED_IDS[@]}"; do
+    found=0
+    for active in "${seen[@]}"; do [ "$active" != "$expected" ] || found=$((found + 1)); done
+    if [ "$found" -ne 1 ]; then
+      printf 'ERROR [%s]: expected one active check, got %s\n' "$expected" "$found" >&2; error=1
+    fi
+  done
+  for active in "${seen[@]}"; do
+    found=0
+    for expected in "${EXPECTED_IDS[@]}"; do [ "$active" != "$expected" ] || found=$((found + 1)); done
+    if [ "$found" -ne 1 ]; then
+      printf 'ERROR [%s]: rule absent or duplicated in EXPECTED_IDS\n' "$active" >&2; error=1
+    fi
+  done
+  [ "$error" -eq 0 ] || exit 2
+  [ "$fail" -eq 0 ] || exit 1
+  printf 'PASS: %s configured lexical checks\n' "${#seen[@]}"
 }
 
-# ── 与 HARNESS-redlines.md 编号严格对齐 ──────────────────────────────
 check "R1" "domain/ 禁止 import prisma（DB 只能从 db/ 进）" "from ['\"]@?prisma" src/domain
 check "R2" "被拆分的旧单体禁止复活" "@acme/monolith" src
 check "R3" "禁止类型逃逸 as any / as unknown" '\bas any\b|as unknown as' src
 check "R4" "禁止裸 process.env，走 config/env.ts" "process\.env\." src/services src/domain src/routes
 check "R5" "禁止 console.log，走 logger" "console\.(log|debug)" src
 check "R6" "路由层禁止裸 SQL 字符串" "(SELECT|INSERT|UPDATE|DELETE)[[:space:]]" src/routes
-# R7（覆盖率）走 CI，R8（commit）走 commitlint —— 不是 grep 能查的，不放这里
-# ────────────────────────────────────────────────────────────────────
-
-if [ "$fail" -ne 0 ]; then
-  echo ""
-  echo "红线被触发，合并应被拦下。"
-  exit 1
-fi
-echo "✓ 红线全部清零"
+# R7 / R8 are illustrative CI / commitlint policies, not implemented by this sample.
+finish

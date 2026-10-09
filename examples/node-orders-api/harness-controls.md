@@ -48,13 +48,13 @@ new_hits="$(comm -13 docs/baselines/R2-legacy-monolith.txt /tmp/R2-current.txt)"
 
 `AGENTS.md → workflow-scenes.md` 必须命中一个场景，并能找到目标层契约与 `SPEC.md` 关闭证据。若任务只改依赖，不把整份 SPEC 和全部 ADR 装入上下文。
 
-## Experience Promotion
+## Experience Promotion（虚构字段示范）
 
-> 不在实例化时填写空记录；以下 Candidate 由两次同类失败触发，尚未批准前不改正式 Skill。
+> 下表日期、diff #118 / #126 和评测为虚构写作素材，不是本仓事件或执行证据；禁止据此宣称收益或批准。实际可运行经验见 [experience-loop](../experience-loop/README.md)。
 
 | 日期 | Evidence / 触发 | 分类与 Candidate | 适用 / 不适用 | Eval | Owner / 发布与回滚 |
 | --- | --- | --- | --- | --- | --- |
-| 2026-06-06 | 两次在 route 中拼 SQL；关联 diff #118 / #126 | 可机械拒绝模式 → Candidate R6 Gate | 适用 `src/routes/**`；不适用 repository migration | 原失败回放失败、repository 反例通过、场景路由命中 | Tech Lead；批准后发布，误报则回滚规则 |
+| 2026-06-06 | 两次在 route 中拼 SQL；关联 diff #118 / #126 | R6 已有有限文本 smoke；Candidate R6-v2 AST Sensor 扩充语法覆盖 | 适用 `src/routes/**`；不适用 repository migration | not-run；应补原失败、repository 反例和路由 smoke | Tech Lead（虚构角色）；候选未生效，不代表正式 R6 的批准记录 |
 
 ## Runner Consumption Contract
 

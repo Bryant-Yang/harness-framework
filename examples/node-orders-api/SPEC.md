@@ -2,6 +2,8 @@
 
 <!-- harness:behaviour-evidence=canonical-source -->
 
+> 以下是虚构业务的写作示范；`orders-v1` fixtures 与 contract tests 未提供、未运行，没有真实批准或业务验收。
+>
 > `SPEC.md` 是关键 Behaviour 独立证据与人工验收边界的唯一事实源；`harness-controls.md` 只引用本用例。
 
 ## UC-ORD-001 创建订单

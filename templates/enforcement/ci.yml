@@ -4,10 +4,9 @@
 # 「红线全部清零」不是靠 agent 自觉，而是靠 check-redlines + lint 在这里机械拦。
 #
 # 守门件套（与 AGENTS.md §4.4 / workflow §5 一致）：
-#   redlines → typecheck → lint → test → build
+#   redlines → commitlint → typecheck → lint → test → build
 # 重场景（WebGL / E2E / 性能预算）按需放到 nightly job，避免拖慢 PR 反馈。
 #
-# @author <AUTHOR>
 name: CI
 
 on:
@@ -22,11 +21,12 @@ concurrency:
 
 jobs:
   gates:
-    name: redlines / typecheck / lint / test / build
+    name: redlines / commitlint / typecheck / lint / test / build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
 
       # ── 红线闸门：跨语言、最先跑、最便宜，命中即 fail ──
       - name: Red lines
@@ -36,10 +36,34 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 10 }
       - uses: actions/setup-node@v4
-        with: { node-version: '20.10', cache: 'pnpm' }
+        with: { node-version: '22', cache: 'pnpm' }
 
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
+
+      # Requires @commitlint/cli + @commitlint/config-conventional in the lockfile.
+      - name: Commit messages (PR range)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+
+      - name: Commit messages (push range)
+        shell: bash
+        if: github.event_name == 'push'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            # A first push has no base; validate every reachable commit, including root.
+            git rev-list --reverse "$HEAD_SHA" | while IFS= read -r revision; do
+              git show -s --format=%B "$revision" | pnpm exec commitlint --verbose || exit "$?"
+            done
+          else
+            pnpm exec commitlint --from "$BEFORE_SHA" --to "$HEAD_SHA" --verbose
+          fi
 
       - name: Typecheck
         run: pnpm typecheck

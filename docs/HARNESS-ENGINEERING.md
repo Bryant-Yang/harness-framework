@@ -5,7 +5,7 @@
 <!-- harness:experience-promotion=candidate-first -->
 <!-- harness:runner-consumption=optional -->
 
-> Harness Framework 2.2.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
+> Harness Framework 2.3.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
 > [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html)
 > 中提出的控制系统视角，落成一套轻量、可实例化的工程契约方法。
 >
@@ -38,7 +38,7 @@ Guide 预先引导
 - **Guides（feedforward）**：行动前提高首次做对的概率。
 - **Sensors（feedback）**：行动后提供可定位、可修复、可复验的信号。
 - **Self-correction**：当前变更内的修正循环。
-- **Experience Promotion**：同类失败至少出现两次，或一次高严重度逃逸后，才把证据分类为 Candidate；未经评测和 Owner 批准不改正式控制。
+- **Experience Promotion**：同类失败至少出现两次，或一次高严重度逃逸后，才把证据分类为 Candidate；自主候选未经评测和对应 Owner 授权不改正式控制；明确维护授权不重复请求。
 
 只有 Guide，没有 Sensor，无法证明规则生效；只有 Sensor，没有 Guide，agent 会反复犯同一种错误。
 
@@ -87,7 +87,7 @@ Guide 预先引导
 | Inferential Review Criterion | 需要语义和权衡判断 | 给出证据与建议，由 review 流程处理 |
 | Human Acceptance Decision | 涉及业务意图、风险与责任 | 必须由明确责任人验收或批准 |
 
-“写不出 grep 就不是红线”仍然成立，但不代表它不重要；它可能属于推理型 review criterion 或人类验收。
+红线须可稳定机械判断；grep 的有限文本检测不等于语义保证。无法可靠形式化的判断仍很重要，应进入推理型 review criterion 或人类验收。
 
 ## 4. 三类调节目标与信任边界
 
@@ -156,7 +156,7 @@ Structure + Tech Stack + Guides + Sensors → Harness Template → Project Insta
 - 指标会产生 Goodhart 风险，门禁通过不等于系统更好。
 - 模板实例会与上游漂移，必须记录版本并走人工审查的升级协议。
 - 已接入项目修改 Harness 时按影响范围同步唯一事实源、引用与配套控制，并最小复验；不重跑完整实例化，也不触碰无关控制。
-- 高影响 harness 变更由 agent 提案、提供失败样例和影响面，由人批准。
+- 高影响 harness 变更提供失败样例和影响面，核对对应授权；已有明确维护授权不重复求批准。
 - Harness 的目标不是消灭人，而是把人的注意力留给业务意图、例外、风险和责任判断。
 
 ## 9. Experience Promotion：Harness 如何安全地长出 Skill
@@ -176,14 +176,14 @@ Structure + Tech Stack + Guides + Sensors → Harness Template → Project Insta
 
 项目事实进入 SPEC / ADR，复用工作方法才进入 Candidate Skill；机械可拒模式进入 Gate，语义漏检进入 Sensor，重试 / 状态 / 幂等问题进入普通代码。Candidate 至少携带来源证据、适用 / 不适用范围、触发条件、正反例、目标输出、Owner、版本和回滚条件。
 
-Agent 可以起草 Candidate，不能自动覆盖正式 Skill、Guide、Sensor 或项目契约。单次普通失败继续只做 Self-correction，不制造可见流程噪声。
+首个普通失败引用既有任务 / PR 的类别与证据，不新增日常日志。重复按同根因的独立事件计算。达到触发条件后才建立薄索引和主题条目，使用稳定 ID 与 candidate → evaluated → active → retired 状态；按场景召回并只在一个正式事实源维护规则。自主候选须评测及对应授权；已明确维护授权直接实现并验证。Skill 用同条件有 / 无 Skill 评测，确定性 Gate 回放不代表模型收益。失效或成本过高时退役并保留替代关系。完整方法及真实回放见 [经验学习协议](experience-learning.md)。
 
 ## 10. Runner 是消费者，不是 Harness 本体
 
 只有检测到 Codex Goal、Mission Driver 等 runner 时，项目才补可选 Runner Consumption Contract：
 
 - 输入目标、范围、非目标、Guides、Sensors、关闭证据、权限、预算与停止 / 升级条件；
-- 输出状态、证据、失败 Sensor、下一动作、外部副作用与审计记录；
+- 输出状态、证据、失败 Sensor、下一动作、外部副作用与审计记录；证据绑定输入、代码与契约版本，相关变更后重新验收；结果未知的外部操作先查询状态 / 幂等键，避免盲目重复；
 - runner 不拥有项目事实，不得静默弱化控制，也不能把 fresh session 或 verifier 自报冒充来源独立验收。
 
 本框架不实现 runner、Flow DSL、任务恢复或模型编排；它只规定 runner 进入项目后必须消费和返回什么。

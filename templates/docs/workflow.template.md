@@ -62,15 +62,15 @@ Routing Probe（可由 agent 自检，不新增用户动作）：场景是否命
 3. 重跑同一 Sensor，直到通过；
 4. 不得通过忽略规则、降低阈值或删除测试制造假绿。
 
-同类失败至少两次，或一次高严重度逃逸时：把证据写入 [`harness-controls.md`](harness-controls.md)，先分类为项目事实、Candidate Skill、Gate、Sensor、普通代码或一次性记忆。单次普通失败只修当前问题。Agent 只能提出 Candidate；原失败回放、反例 / 非适用例、路由 smoke、Owner 批准和回滚条件齐备后才能晋级正式控制。
+先在既有任务 / PR 记录保留首个失败的类别与证据链接，不新增日常日志。同类失败至少两次，或一次高严重度逃逸时：把证据索引写入 [`harness-controls.md`](harness-controls.md)，先分类为项目事实、Candidate Skill、Gate、Sensor、普通代码或一次性记忆。单次普通失败只修当前问题。对自主经验晋级，Agent 先提出 Candidate；原失败回放、反例 / 非适用例、路由 smoke、Owner 批准和回滚条件齐备后才能晋级正式控制。已有针对该 Skill / 契约的明确维护授权不重复审批。状态、召回、A/B 与退役按 controls §7。
 
 ## 5. 提交前自查
 
-合入前对自己问，全是「是」才能 request review：
+按当前任务核对适用项；不适用项说明理由：
 
-1. 用例编号写在 PR 描述里没有？
-2. 里程碑对应 DoD 我勾掉了哪几条？
-3. 红线我有违反吗？（逐条 grep 自查一遍）
+1. 涉及业务时，实际用例 / 公开行为验收证据可达吗？
+2. 已设里程碑的相关 DoD 达成了吗？
+3. 启用的阻断红线通过，已批准历史 baseline 无新增违规吗？
 4. CI 全绿了吗？
 5. 涉及新动作 / 新依赖 / 新红线例外，我起 ADR 了吗？
 6. 我的 commit message 符合 [`git-commit-conventions.md`](git-commit-conventions.md) 吗？

@@ -1,6 +1,6 @@
 # <PROJECT> 工程契约（HARNESS）
 
-> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.2.0（来源 commit：<sha>）
+> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.3.0（来源 commit：<sha>）
 >
 > 这是 **工程侧的契约文档**：北极星原则、技术栈、目录结构、红线、决策入口。配套 [`docs/SPEC.md`](docs/SPEC.md)（业务规格）与 [`docs/workflow.md`](docs/workflow.md)（按场景的工作流）。
 >
@@ -8,7 +8,7 @@
 
 <!--
 占位符清单：<PROJECT> <AUTHOR> <MISSION> 技术栈表 目录树 红线条目 性能预算。
-红线编写黄金标准：能写成一条 grep 命令的才是红线，否则降级到北极星或普通规范。
+红线必须可稳定机械判断；grep 仅检测文本模式，语法 / 语义保证采用 AST / lint / 结构测试并说明边界。
 -->
 
 ## 文档地图
@@ -162,12 +162,12 @@ redlines → typecheck → lint → test → build
 | --- | --- | --- | --- |
 | R1 | 禁止类型逃逸（`as any` / `as unknown as`） | `check "R1" ... '\bas any\b\|as unknown as'` + eslint `no-explicit-any` | grep + lint |
 | R2 | 不允许同时引入第二套 <UI/状态/网络> 库 | `no-restricted-imports` regex 禁 `<lib-a>\|<lib-b>` | lint |
-| R3 | 被替换的旧依赖禁止任何形式复活 | `no-restricted-imports` regex 禁 `^<legacy>` | lint |
+| R3 | 已批准入口范围内禁止旧依赖引用 | 项目 AST / 依赖扫描；静态 import 子集用 `no-restricted-imports` 禁 `^<legacy>` | lint / 结构测试 |
 | R4 | 业务层禁止裸 import <重依赖>（必须走封装层） | `no-restricted-imports`（业务目录禁、封装层豁免） | lint |
-| R5 | 新代码无单测不进主分支 | CI `pnpm test` + coverage 阈值 | CI |
-| R6 | commit 必走 Conventional Commits | `commitlint` type-enum | commit-msg 钩子 |
+| R5 | 关键模块覆盖率达到项目阈值（不等同逐段新代码必有单测） | CI `pnpm test` + coverage 阈值 | CI |
+| R6 | commit 必走 Conventional Commits | `commitlint` type-enum + 提交范围检查 | commit-msg + CI |
 | R7 | <项目特有红线，例如「文案必须接 t()」> | `check "R7" ... '<grep 模式>'` | grep |
-| R8 | 不写 God Class（文件 > <N> 行先拆） | `check "R8"`（行数脚本）或 code review | grep/review |
+| R8 | 源码文件不超过已批准 <N> 行上限（按项目配置例外） | 行数脚本：正向 / 超限 / 排除目录探针 | CI |
 
 > **每加一条红线，先问「谁来查、用什么命令查」。** 答不上来就不是红线。
 > 配套守门实现见 [`enforcement/README.md`](enforcement/README.md)。
@@ -175,7 +175,7 @@ redlines → typecheck → lint → test → build
 
 ## 9. 决策记录（ADR）
 
-每个重大决定写一篇 ADR，模板见 [`docs/adr/_template.md`](docs/adr/_template.md)，索引见 [`docs/adr/README.md`](docs/adr/README.md)。ADR 正文一经合入只能通过新 ADR（标记 `Supersedes`）修订；不允许直接编辑旧 ADR 正文。ADR 索引可更新状态与交叉引用。
+每个重大决定写一篇 ADR，模板见 [`docs/adr/_template.md`](docs/adr/_template.md)，索引见 [`docs/adr/README.md`](docs/adr/README.md)。ADR 正文一经合入只能通过新 ADR（标记 `Supersedes`）修订；不允许直接编辑旧 ADR 正文。ADR 索引可更新状态与交叉引用。Accepted ADR 仅在其决策领域生效；最新日期不能覆盖不相关工程决策或业务规格。
 
 ## 10. Harness 控制闭环
 
@@ -196,4 +196,4 @@ redlines → typecheck → lint → test → build
 
 ---
 
-*本文是动态合约。每次重大改动须同步更新本文与相关 ADR。*
+*本文是动态合约。授权范围内更新当前契约；重大决策追加 ADR，保留历史正文并同步有效决策。*

@@ -4,7 +4,7 @@
 >
 > 每个重大决定写一篇 ADR。模板见 [`_template.md`](_template.md)。
 >
-> ADR 正文一经合入，**只能通过新 ADR（标记 `Supersedes ADR-NNNN`）来修订；不允许直接编辑旧 ADR 正文**。本索引可以更新状态与交叉引用；文档冲突时以最新 ADR 为准。
+> ADR 正文一经合入，**只能通过新 ADR（标记 `Supersedes ADR-NNNN`）来修订；不允许直接编辑旧 ADR 正文**。本索引可以更新状态与交叉引用；只有同一决策领域的 Accepted ADR 且明确 `Supersedes` 旧决策时才替代旧决策；日期较新不自动胜出，ADR 不覆盖业务规格。证据无法消解实质冲突时暂停依赖分支并说明。
 
 ## 已落地
 

@@ -1,11 +1,11 @@
-# Harness Framework 2.2.0 —— 「文档即契约」到「可学习控制闭环」
+# Harness Framework 2.3.0 —— 「文档即契约」到「可学习控制闭环」
 
 > 作者：Bryant Yang
 >
 > 这是一套从 `dw_gis3d` 工程沉淀出来的**通用工程契约框架**，与具体技术栈无关。
 > 它解决一个问题：**让任何 AI 编码 agent 进场即知道「这是什么项目、不能碰什么、产出落在哪、提交前必跑什么」；做完后还能被 Sensor 检测、自我修正，并把重复失败反馈到下一版契约。**
 
-> **读者是 agent,不是人。** Claude Code / Codex / Cursor / Gemini CLI / Google 反重力 Antigravity 等各家工具找的入口文件名不同(`CLAUDE.md` / `AGENTS.md` / `GEMINI.md` …)。本框架以 `AGENTS.md` 为**唯一契约源**(已是 Linux 基金会主推的开放标准,20+ 工具原生读取),其余工具用**薄指针文件**指回它——见下方「机制 0」。
+> **读者是 agent,不是人。** Claude Code / Codex / Cursor / Gemini CLI / Google 反重力 Antigravity 等各家工具找的入口文件名不同(`CLAUDE.md` / `AGENTS.md` / `GEMINI.md` …)。本框架以 `AGENTS.md` 为**唯一项目入口**(已是 Linux 基金会主推的开放标准,20+ 工具原生读取),其余工具用**薄指针文件**指回它——见下方「机制 0」。
 
 ---
 
@@ -36,12 +36,19 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 
 已有 2.1 项目可增量吸收；没有新命令、日常清单、强制顶层文件或空台账。正常任务仍然从 `AGENTS.md → workflow 场景` 进入，只有出现高价值候选、上下文冲突或高风险边界时才增加可见反馈。
 
+2.3 将这些要求变成可回放的交付：
+
+- 检查区分 PASS / FAIL / ERROR，漏配和扫描错误阻断；每条文本规则、baseline、TS 与 commitlint 都有实际探针，grep 的语义边界明确。
+- [经验学习](docs/experience-learning.md)采用首个事件引用、按任务召回、稳定 ID、候选 / 评测 / 生效 / 退役；[真实样例](examples/experience-loop/README.md)回放旧脚本假绿。Skill 模型 A/B 尚未运行，门禁回放不代表模型收益。
+- [最小 / 产品组合](docs/instantiation-profiles.md)让裁剪后的文档和锚点闭合；旧项目只合并必要改动，已批准 baseline 只拦新增。当前 HARNESS 可维护，Accepted ADR 保存历史。
+- Skill 同步先完整暂存并验证，再替换目标；保留共享符号链接、旧版本备份和内容清单，可只读检查漂移。
+
 11 个可复用机制（详见 [`METHODOLOGY.md`](METHODOLOGY.md)）：
 
 | # | 机制 | 模板文件 | 一句话作用 |
 | --- | --- | --- | --- |
 | 0 | **多工具入口指针** | `CLAUDE.md` / `GEMINI.md` / `.github/` / `.cursor/` | 每个 agent 工具找的文件名不同，各放一个薄指针指回 AGENTS.md |
-| 1 | **唯一契约源** | `AGENTS.template.md` | 真正的契约只此一份，所有指针都引到它，杜绝多份漂移 |
+| 1 | **唯一项目入口** | `AGENTS.template.md` | 入口只此一份，事实分别由 Owner Doc 持有，指针只路由 |
 | 2 | **工程契约（方向 + 北极星 + 红线）** | `HARNESS.template.md` | 用轻量 Direction Contract 冻结目标与关闭证据，再声明北极星、技术栈、目录和驳回级红线 |
 | 2.5 | **红线守门（牙齿）** | `enforcement/` | 把红线编译成 grep / lint / commitlint / CI 闸门——违反就合不进。**没这层红线是装饰** |
 | 3 | **业务规格总纲** | `docs/SPEC.template.md` | 用例索引 + 用例模板 + 阶段一览，业务/开发的共同语言 |
@@ -50,14 +57,14 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 | 6 | **业务决议卡** | `docs/decisions/` | 业务「系统该做什么」的待决问题，⏳ 状态可阻断里程碑 |
 | 7 | **提交规范** | `docs/git-commit-conventions.template.md` | Conventional Commits，CI commitlint 强制 |
 | 8 | **文档地图（按角色）** | `PROJECT-README.template.md` | 不同角色/任务的文档入口表 |
-| 9 | **提交前自查清单** | 内嵌于 workflow / AGENTS | 全部问题为「是」才能 request review |
+| 9 | **提交前自查清单** | 内嵌于 workflow / AGENTS | 适用项通过；失败、未运行和不适用分别报告 |
 | 10 | **控制台账 + Experience Promotion** | `docs/harness-controls.template.md` | 最小登记控制；稳定经验先成为 Candidate，经评测与批准后再晋级，runner 契约按存在性启用 |
 
 ---
 
 ## 机制 0 —— 多工具入口（agent-first 的关键）
 
-各家工具自动发现的入口文件名不同。本框架的策略：**`AGENTS.md` 一份真契约,其余全是指针**。
+各家工具自动发现的入口文件名不同。本框架的策略：**`AGENTS.md` 一个入口，事实由指定 Owner Doc 持有，其余工具配置保持薄指针**。
 
 | 工具 | 它自动找的文件 | 原生读 `AGENTS.md`? | 框架放什么 |
 | --- | --- | --- | --- |
@@ -69,7 +76,7 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 | **Gemini CLI** | `GEMINI.md` | ❌ | **必须** `GEMINI.md` 指针（`@AGENTS.md` 导入） |
 | **Claude Code** | `CLAUDE.md` | ❌（pending） | **必须** `CLAUDE.md` 指针（`@AGENTS.md` 导入） |
 
-> 原则:**指针只指,不写规则**。任何指针文件里出现实质规则,就是漂移的开始——立刻搬回 `AGENTS.md`。
+> 原则:**指针只指,不写规则**。任何指针文件里出现实质规则,就是漂移的开始——搬回对应 Owner Doc，由 `AGENTS.md` 路由。
 > 数据来源:[agents.md 开放标准](https://agents.md/)、Antigravity 官方文档(v1.20.3 起读 AGENTS.md)。各家支持随版本变化,落地前核对当时文档。
 
 ---
@@ -77,7 +84,7 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 ## 目录结构
 
 ```
-harness_extract/
+harness-framework/
 ├── VERSION                            # 框架版本
 ├── README.md                          # 本文：框架是什么 + 如何实例化
 ├── METHODOLOGY.md                     # 方法论：每个机制为什么存在、如何裁剪
@@ -87,11 +94,11 @@ harness_extract/
 ├── INSTANTIATION-CHECKLIST.md         # 复用到新工程的逐步检查清单
 ├── LICENSE                            # MIT
 ├── SKILL.md                           # 标准 skill 根入口；npx 安装时携带本仓完整资源
-├── .github/workflows/check-framework.yml # 本仓最小自证 CI，只运行框架自检
-├── scripts/check-framework.sh         # 结构、链接、baseline、组装与负向探针自证
+├── .github/workflows/check-framework.yml # 本仓自证 CI，执行隔离探针与锁定 TS / commitlint
+├── scripts/check-framework.sh         # 结构、锚点、实例化、baseline、回放与安装探针入口
 ├── scripts/sync-skill.sh             # 仓库维护者本地组装、同步 skill 的兼容脚本
 └── templates/                         # 拷过去即可（带 <占位符> 的填空，指针文件直接用）
-    ├── AGENTS.template.md              # ← 唯一真契约（机制 1）
+    ├── AGENTS.template.md              # ← 唯一项目入口（机制 1）
     ├── CLAUDE.md                       # ┐
     ├── GEMINI.md                       # │ 机制 0：多工具入口指针，内容只指回 AGENTS.md
     ├── .github/copilot-instructions.md # │
@@ -121,7 +128,7 @@ harness_extract/
         └── decisions/
             └── README.template.md
 
-examples/node-orders-api/              # 异构完整样例：Node 后端，红线全填好
+examples/node-orders-api/              # 假想 Node 后端样例：字段完整，检测边界明确
 ├── README.md                          #   对照「机制相同、内容不同」
 ├── HARNESS-redlines.md                #   §8 三列表填好版
 ├── workflow-scenes.md                 #   场景表填好版
@@ -134,7 +141,7 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 
 ## 如何复用到新工程（30 秒版）
 
-1. 把 `templates/` 整份拷到新工程根目录。
+1. 按[实例化组合](docs/instantiation-profiles.md)选择必要模板；小工具用 `templates/minimal/`，产品按实际范围使用根模板。旧项目在已有事实源最小合并，禁止整份覆盖。
 2. 全局替换占位符（见每个模板顶部的「占位符清单」）：
    - `<PROJECT>` → 你的项目名
    - `<MISSION>` → 项目使命一句话
@@ -142,7 +149,7 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
    - 红线、目录、场景表按项目实情增删。
 3. 删掉每个模板里标了 `> 示例（dw_gis3d）：` 的引用块——那只是给你看「填成什么样」。
 4. 把 `*.template.md` 重命名去掉 `.template`（如 `AGENTS.template.md` → `AGENTS.md`）。
-5. 在每个 agent 的私有配置里加一行 `@AGENTS.md`（指针，机制 1）。
+5. 仅为实际需要的工具加入薄指针；原生读取 AGENTS 的工具不额外复制规则。
 6. 跟着 [`INSTANTIATION-CHECKLIST.md`](INSTANTIATION-CHECKLIST.md) 逐条核对。
 
 > **给团队的说明**：`*.template.md` 文件正文里的内部链接（如 `HARNESS.md`、`docs/workflow.md`）
@@ -150,8 +157,7 @@ examples/node-orders-api/              # 异构完整样例：Node 后端，红�
 > 第 4 步把 `.template` 去掉后，全部链接自动解析。不要因为模板里「链接打不开」以为框架坏了。
 
 > 完整方法论与裁剪建议见 [`METHODOLOGY.md`](METHODOLOGY.md)。
-> 小项目可只取机制 1/2/2.5/4/7（AGENTS + HARNESS + **enforcement** + workflow + commit），其余按规模长出来。
-> **但机制 2.5 守门不能省**——红线没有闸门就是装饰，是 harness「有效」还是「摆设」的分水岭。
+> 小项目使用闭合的最小组合；仅对启用的机械红线接门禁，不凑规则数量。删去未采用的 SPEC / ADR / 里程碑引用，并运行实例化检查。
 >
 > 想看填好的成品长什么样？读 [`examples/node-orders-api/`](examples/node-orders-api/)（一个异构的 Node 后端样例）。
 
@@ -198,3 +204,20 @@ npx skills update harness-framework -g -y
 
 - **Claude Code**：在目标项目里说「用 harness 给这个项目立规矩」，或直接 `/harness-framework`。
 - **Codex**：同名 skill 已就位，触发方式一致。
+
+
+## 维护与验证
+
+```bash
+npm ci --prefix tests/enforcement/ts --ignore-scripts
+bash scripts/check-framework.sh --with-toolchains
+# stdlib 结构 / shell / baseline / 回放检查，不执行 TS
+bash scripts/check-framework.sh
+# 同步现有全局 Skill；已有链接共享时只更新一次，保留旧版备份
+bash scripts/sync-skill.sh
+bash scripts/sync-skill.sh --check
+```
+
+需要 Python 3.10+、Bash、grep；toolchain fixture 使用锁定 npm 依赖，Node 22.13+。新脚本位于 `scripts/`，工具链样例位于 `tests/enforcement/ts/`。CI 执行同一完整命令。安装内容清单记录版本、来源 commit、源工作树状态和文件哈希；备份放在技能根目录外的 `skill-backups/`。修改已安装副本会被 `--check` 检出，修改应回到仓库后同步。
+
+验证边界：文档闭合不证明语义路由完整；文本 smoke 不证明 AST 覆盖；业务样例是虚构设定；Java / Python 的专用 lint / ArchUnit toolchain 和模型 Skill A/B 本轮未运行。

@@ -47,7 +47,7 @@
 **辨析容易混的几对：**
 
 - `feat` vs `refactor`：是否带来新的对外行为？是 → feat，不是 → refactor。
-- `fix` vs `revert`：bug 是新引入还是历史已有？新引入用 revert，历史已有用 fix。
+- `fix` vs `revert`：修复缺陷用 fix；实际撤销某个提交用 revert。缺陷的新旧不决定 type。
 - `chore` vs `build`：与构建产物的生成路径有关用 build，纯依赖/工具链升级用 chore。
 - `style` vs `refactor`：style 不改 AST（仅格式），refactor 改 AST 但不改对外行为。
 
