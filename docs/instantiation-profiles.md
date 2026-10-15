@@ -2,10 +2,12 @@
 
 组合是选材指南，不是每次业务任务的流程。旧项目在任一组合上增量合并，已有 Owner Doc 可以保留路径。
 
+复杂子系统按需使用 [subsystem 模板](../templates/docs/subsystem.template.md)，按实际名字改名并由 workflow 链接；没有相关复杂度时不复制，已有契约直接补齐。普通修复与 review 的采用口径见 [变更验证](change-verification.md)。
+
 | 组合 | 适用 | 必需事实源 | 可选材料 |
 | --- | --- | --- | --- |
 | minimal | 小工具 / 工程库 | AGENTS、HARNESS、workflow、Controls | README 保留已有内容；按实际 Git 路径补提交规则；有重大决策再加 ADR |
-| product | 真实业务产品 | minimal + SPEC（或既有 Behaviour Owner Doc） | 按任务加 roadmap、数据契约、ADR、提交规范、工具指针 |
+| product | 真实业务产品 | minimal + SPEC（或既有 Behaviour Owner Doc） | 按任务加 roadmap、数据契约、ADR、提交规范、工具指针和子系统契约 |
 | legacy overlay | 已有历史债 | 所选组合 + Controls 内批准 baseline 的链接和命令 | 观察模式、收紧计划；不要求历史命中全部清零 |
 
 新 minimal 项目使用 `templates/minimal/` 四份模板。product 使用根模板，删去未使用的行 / 节和链接，或补齐链接的事实源。模板只提供结构，不直接复制全部文件；占位符必须变成项目事实。

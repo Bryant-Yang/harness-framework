@@ -12,7 +12,9 @@ DEFAULT_OWNERS = {'direction': 'HARNESS.md', 'workflow': 'docs/workflow.md',
 KNOWN_TOKENS = {'PROJECT', 'AUTHOR', 'MISSION', 'STACK', 'CI_CMD', 'YYYY-MM-DD', 'N', 'M',
                 'BASELINE', 'EVIDENCE', 'OWNER', 'CONTROLS', 'SCENE', 'OUTPUT', 'SOURCE_SHA',
                 'LOCAL_DELTA', 'LEGACY_STATUS', 'sha', '语言', '...'}
-PLACEHOLDER = re.compile(r'<([^<>\n]+)>')
+# HTML comments carry contract markers, not fill-in fields. An actual field
+# nested inside a comment (<!-- owner: <OWNER> -->) must still be detected.
+PLACEHOLDER = re.compile(r'<(?![!/])([^<>\n]+)>')
 for template in (Path(__file__).resolve().parents[1] / 'templates').rglob('*.template.md'):
     KNOWN_TOKENS.update(PLACEHOLDER.findall(template.read_text()))
 

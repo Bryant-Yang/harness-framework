@@ -5,7 +5,7 @@
 <!-- harness:experience-promotion=candidate-first -->
 <!-- harness:runner-consumption=optional -->
 
-> Harness Framework 2.3.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
+> Harness Framework 2.4.0 将 Birgitta Böckeler 在 Martin Fowler 网站发表的
 > [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html)
 > 中提出的控制系统视角，落成一套轻量、可实例化的工程契约方法。
 >
@@ -125,6 +125,8 @@ Guide 预先引导
 - Dead code、依赖风险和覆盖质量属于持续漂移 Sensor。
 - SLO、错误率、延迟和日志异常属于运行时 Sensor。
 - 左移不是把所有生产验证搬到本地；执行时机必须匹配信号真实性与成本。
+
+普通变更与 runner 使用相同的证据边界：先确认真实执行路径，行为修复保留旧 / 新实现的区分证据，验证和 review 对应实际版本。按风险扩大检查并记录环境覆盖，相关变化后重验受影响部分。具体方法及可选子系统模板见 [变更验证指南](change-verification.md)；不新增运行时编排或日常台账。
 
 ## 6. Harnessability
 

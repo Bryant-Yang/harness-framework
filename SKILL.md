@@ -50,6 +50,10 @@ Gemini CLI / Antigravity → `GEMINI.md`，内容只有一行 `@AGENTS.md` 导�
 
 项目实际存在 Agent 定义、Skills、编排器或工具专用规则时，才审计悬空引用、职责重叠与复用机会；不存在时跳过，不创建空台账。对具体且高影响的系统边界，Sensor 应验证 producer 实际输出 → contract / transform → consumer 预期，而不是分别证明两端存在。
 
+## 变更、修复与 Review
+
+按 `docs/change-verification.md` 增量吸收：规划先确认实际执行路径，变更说明写触发条件与前后行为；复杂子系统可选 `templates/docs/subsystem.template.md`，已有 Owner Doc 就补在原处。行为修复验证旧实现的目标失败与新实现通过，搜索同类路径；无法安全回放时明示限制。普通任务与 runner 都将验证 / 审阅证据绑定实际代码和相关输入版本，变化后复验受影响部分。规则吸收到既有 workflow，不新增日常台账或固定全量测试要求；合并、发布仍需要对应授权。
+
 ## 上下文路由与经验晋级
 
 - `AGENTS.md` 与 workflow 场景是稳定入口；在平台规则与用户当前指令之下，项目事实 / Owner Doc > Skills > memory / 建议性上下文。
@@ -66,6 +70,7 @@ Gemini CLI / Antigravity → `GEMINI.md`，内容只有一行 `@AGENTS.md` 导�
 - `METHODOLOGY.md` — 11 个机制为什么存在、如何按项目规模裁剪
 - `docs/HARNESS-ENGINEERING.md` — Guides / Sensors / Context Routing / Experience Promotion 上位模型与边界
 - `docs/instantiation-profiles.md` — minimal / product 与旧项目增量合并；裁剪后引用须闭合
+- `docs/change-verification.md` — 实际运行路径、回归证明、版本证据与按风险记录的环境覆盖
 - `docs/experience-learning.md` — 首次失败索引、按任务召回、状态、Skill A/B、退役
 - `examples/experience-loop/` — 本仓真实扫描错误假绿的旧 / 新回放；模型 A/B 未运行
 - `examples/node-orders-api/` — 假想业务的字段示例，grep 是有限 smoke，业务 fixtures / CI 未实现

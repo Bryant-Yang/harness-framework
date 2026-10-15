@@ -7,7 +7,7 @@
 <!-- harness:experience-promotion=candidate-first -->
 <!-- harness:runner-consumption=optional -->
 
-> Framework version：2.3.0　项目实例版本：<YYYY-MM-DD / commit>
+> Framework version：2.4.0　项目实例版本：<YYYY-MM-DD / commit>
 >
 > 本文把重要目标映射为 Guide、Sensor / 人工确认、失败处置和责任人。它不替代 `HARNESS.md`、`SPEC.md`
 > 或具体工具配置，只负责证明控制闭环是否完整。
@@ -70,11 +70,11 @@
 
 ## 8. Runner Consumption Contract（仅检测到 runner 时实例化）
 
-> 没有 Codex Goal、Mission Driver 或外部 runner 时删除本节，不创建空配置。存在时记录：目标 / 范围 / 非目标、Guides、Sensors、Closure Evidence、权限 / 人工批准、预算与停止条件；runner 返回状态、证据、失败 Sensor、下一动作、外部副作用与审计记录。runner 不拥有项目事实，不得弱化门禁。证据绑定输入 / 代码 / 契约版本，任一相关变更使旧证据失效；外部操作超时且结果未知时先查询实际状态或幂等键，不盲目重复副作用。
+> 没有 Codex Goal、Mission Driver 或外部 runner 时删除本节，不创建空配置。存在时记录：目标 / 范围 / 非目标、Guides、Sensors、Closure Evidence、权限 / 人工批准、预算与停止条件；runner 返回状态、证据、失败 Sensor、下一动作、外部副作用与审计记录。runner 不拥有项目事实，不得弱化门禁。证据版本按 [workflow 的通用要求](workflow.md#52-证据与审阅版本)，相关变更后重验受影响部分；外部操作超时且结果未知时先查询实际状态或幂等键，不盲目重复副作用。
 
 ## 9. Baseline 与模板升级
 
 - **Legacy baseline**：<已批准基线文件 / 采集命令 / 只拦新增的比较命令>。扫描器只将 exit 1 解释为无命中，exit 2+ 阻断；不得用 `|| true` 吞错。框架提供 `scripts/check-baseline.py capture <baseline> -- rg -n --no-heading --color never '<模式>' src` 和 `check <baseline> -- <同一扫描命令>`；项目可复制该脚本或复用现有等价工具。按文件与内容保留重复计数，忽略行号移动；同一文件新增同样命中仍拦截。baseline 不可静默扩大，扫描输入 / 匹配策略变化须重新审查。此文本 Gate 不证明 AST / 语义覆盖。
-- **模板来源**：Harness Framework `2.3.0`，来源 commit `<sha>`。
+- **模板来源**：Harness Framework `2.4.0`，来源 commit `<sha>`。
 - **本地差异**：<哪些是项目事实，升级时不得自动覆盖>。
 - **升级策略**：先看上游 diff，区分 bug fix / optional control / breaking policy，再人工合并并重跑负向验证。

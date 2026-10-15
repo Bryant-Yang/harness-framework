@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--with-toolchains', action='store_true')
     args = parser.parse_args()
     version = (ROOT / 'VERSION').read_text().strip()
-    require(version == '2.3.0', f'unexpected version: {version}')
+    require(version == '2.4.0', f'unexpected version: {version}')
     for name in ('README.md', 'docs/HARNESS-ENGINEERING.md', 'templates/HARNESS.template.md', 'templates/docs/harness-controls.template.md'):
         require(version in (ROOT / name).read_text(), f'version drift: {name}')
     for name in ('CLAUDE.md', 'GEMINI.md', '.github/copilot-instructions.md', '.cursor/rules/000-agents.mdc'):
@@ -29,7 +29,7 @@ def main():
         require('AGENTS.md' in text and len(text.splitlines()) <= 20 and '\n## ' not in text, f'not a thin pointer: {name}')
     skill = (ROOT / 'SKILL.md').read_text()
     require(skill.startswith('---\nname: harness-framework\n') and len(skill.splitlines()) < 500, 'invalid Skill entry')
-    for link in ('AI-ADOPTION-PROTOCOL.md', 'docs/HARNESS-ENGINEERING.md', 'docs/experience-learning.md'):
+    for link in ('AI-ADOPTION-PROTOCOL.md', 'docs/HARNESS-ENGINEERING.md', 'docs/experience-learning.md', 'docs/change-verification.md'):
         require(link in skill, f'Skill missing resource: {link}')
     for name, marker in (
         ('AI-ADOPTION-PROTOCOL.md', 'harness:maintenance-routing=delta-impact'),

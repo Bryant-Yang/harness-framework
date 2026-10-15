@@ -1,6 +1,6 @@
 # <PROJECT> 工程契约（HARNESS）
 
-> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.3.0（来源 commit：<sha>）
+> 作者：<AUTHOR>　最近更新：<YYYY-MM-DD>　Harness Framework：2.4.0（来源 commit：<sha>）
 >
 > 这是 **工程侧的契约文档**：北极星原则、技术栈、目录结构、红线、决策入口。配套 [`docs/SPEC.md`](docs/SPEC.md)（业务规格）与 [`docs/workflow.md`](docs/workflow.md)（按场景的工作流）。
 >
@@ -154,11 +154,11 @@ redlines → typecheck → lint → test → build
 
 ## 8. 红线（共 <N> 条，违反必驳回）
 
-> **强制规则**：每条红线**必须**填满「守门命令」列——它就是 [`enforcement/`](enforcement/) 里那一行
+> **强制规则**：每条红线**必须**填满「守门命令」列——对应项目实际脚本或配置中的那一行
 > grep / lint / commitlint。**填不出守门命令的不准当红线**，降级到北极星原则或普通规范。
 > 违反不讨论例外，直接 reject。宁少勿滥：10 条真红线 > 30 条没人查的红线。
 
-| # | 红线 | 守门命令（一一对应 `enforcement/`） | 谁拦 |
+| # | 红线 | 守门命令（对应项目实际脚本 / 配置） | 谁拦 |
 | --- | --- | --- | --- |
 | R1 | 禁止类型逃逸（`as any` / `as unknown as`） | `check "R1" ... '\bas any\b\|as unknown as'` + eslint `no-explicit-any` | grep + lint |
 | R2 | 不允许同时引入第二套 <UI/状态/网络> 库 | `no-restricted-imports` regex 禁 `<lib-a>\|<lib-b>` | lint |
@@ -170,7 +170,7 @@ redlines → typecheck → lint → test → build
 | R8 | 源码文件不超过已批准 <N> 行上限（按项目配置例外） | 行数脚本：正向 / 超限 / 排除目录探针 | CI |
 
 > **每加一条红线，先问「谁来查、用什么命令查」。** 答不上来就不是红线。
-> 配套守门实现见 [`enforcement/README.md`](enforcement/README.md)。
+> 配套守门实现的位置与运行时机登记在 [`docs/harness-controls.md`](docs/harness-controls.md)，不保留未复制的框架资源链接。
 > 写不出机械命令不代表不重要：语义约束登记为 `docs/harness-controls.md` 的 Inferential Review Criterion，业务与风险登记为 Human Acceptance Decision。
 
 ## 9. 决策记录（ADR）

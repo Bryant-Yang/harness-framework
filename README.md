@@ -1,4 +1,4 @@
-# Harness Framework 2.3.0 —— 「文档即契约」到「可学习控制闭环」
+# Harness Framework 2.4.0 —— 「文档即契约」到「可学习控制闭环」
 
 > 作者：Bryant Yang
 >
@@ -42,6 +42,14 @@ Guide 预先引导 → Agent 变更 → Sensor 检测 → Agent 自我修正
 - [经验学习](docs/experience-learning.md)采用首个事件引用、按任务召回、稳定 ID、候选 / 评测 / 生效 / 退役；[真实样例](examples/experience-loop/README.md)回放旧脚本假绿。Skill 模型 A/B 尚未运行，门禁回放不代表模型收益。
 - [最小 / 产品组合](docs/instantiation-profiles.md)让裁剪后的文档和锚点闭合；旧项目只合并必要改动，已批准 baseline 只拦新增。当前 HARNESS 可维护，Accepted ADR 保存历史。
 - Skill 同步先完整暂存并验证，再替换目标；保留共享符号链接、旧版本备份和内容清单，可只读检查漂移。
+
+2.4 补齐[变更与审阅证据](docs/change-verification.md)，保持现有机制和任务入口：
+
+- 复杂子系统可选[运行路径契约模板](templates/docs/subsystem.template.md)，已有 Owner Doc 在原处维护；语义变化说明触发条件、前后行为与邻近不变情形。
+- 普通修复补旧实现目标失败 / 新实现通过的证明；普通任务的验证和 review 绑定代码及相关输入版本，相关变更后复验，环境覆盖按风险记录。
+- 自检实际渲染完整 product 模板和裁剪组合；修复契约 HTML 标记被当成占位符，以及 HARNESS 对未复制 `enforcement/` 资源的悬空引用。结构通过仍不证明语义或模型收益。
+
+已有项目按影响吸收到 workflow，不新增必读全集、日常台账或固定全量测试；minimal 仍只有四份必要模板。
 
 11 个可复用机制（详见 [`METHODOLOGY.md`](METHODOLOGY.md)）：
 

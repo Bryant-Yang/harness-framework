@@ -1,6 +1,6 @@
 # <PROJECT> 控制闭环
 
-Framework：2.3.0；来源 commit：<SOURCE_SHA>；项目差异：<LOCAL_DELTA>。
+Framework：2.4.0；来源 commit：<SOURCE_SHA>；项目差异：<LOCAL_DELTA>。
 
 | 目标 | Guide | Sensor / 人工确认 | 失败处置 | Owner |
 | --- | --- | --- | --- | --- |
